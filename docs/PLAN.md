@@ -7,14 +7,15 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 **Architecture:** Strict separation of concerns (Core Domain Logic vs. UI/Visualization).
 **Development Strategy:** Test-Driven Development (TDD) for core logic and state management to ensure AI agents have a strict feedback loop.
 
-## Phase 1: Environment & Foundation
+## Phase 1: Environment & Foundation ✅ — *Completed 2026-09-24*
 
-* [ ] Initialize React + TypeScript project using Vite.
-* [ ] Install and configure Tailwind CSS.
-* [ ] Set up strict ESLint and Prettier configurations.
-* [ ] Install and configure `vitest` for unit testing.
-* [ ] Establish initial folder structure (`src/core`, `src/components`, `src/store`, `src/types`, `src/__tests__`).
-* [ ] Clean up Vite boilerplate code.
+* [x] Initialize React + TypeScript project using Vite.
+* [x] Install and configure Tailwind CSS (v4 via `@tailwindcss/vite`).
+* [x] Set up strict ESLint and Prettier configurations.
+* [x] Install and configure `vitest` for unit testing (3 tests passing ✓).
+* [x] Establish initial folder structure (`src/core`, `src/components`, `src/store`, `src/types`, `src/__tests__`).
+* [x] Clean up Vite boilerplate code — minimal dark-themed `App.tsx` header.
+* [x] Add `.gitignore` (excludes `node_modules/`, `dist/`, `coverage/`, `.env*`, logs).
 
 ## Phase 2: Core Domain Logic (TDD Approach - No UI)
 
