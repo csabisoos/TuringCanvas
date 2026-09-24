@@ -4,8 +4,7 @@
  * Wraps a DFAData structure and enforces all structural invariants.
  * This module is pure TypeScript: zero UI, zero React, zero DOM.
  *
- * Scope for this phase: construction + addTransition.
- * Simulation / string-processing logic is intentionally deferred to a later phase.
+ * Public API: constructor · addTransition · simulate
  */
 import type { DFAData, State, Transition } from '../types/automata';
 
@@ -103,5 +102,56 @@ export class DFA {
     }
 
     this.data.transitions.push({ fromStateId: from, toStateId: to, symbol });
+  }
+
+  /**
+   * Simulate the DFA on the given input string.
+   *
+   * The method is **pure** — it never mutates `this.data`.
+   *
+   * @param input - The string to process. Each Unicode code-point is treated
+   *                as one symbol; multi-character symbols are not supported.
+   * @returns `true` if the DFA accepts the input, `false` if it rejects it.
+   * @throws {Error} if a symbol is not in Σ, or if the transition function is
+   *                 undefined for the current (state, symbol) pair (incomplete DFA).
+   */
+  simulate(input: string): boolean {
+    // Locate the unique initial state (constructor guarantees exactly one).
+    let currentStateId = [...this.data.states.values()].find(
+      (s) => s.isInitial,
+    )!.id;
+
+    // Build a lookup map for O(1) transition resolution.
+    // Key: "<fromStateId>|<symbol>"
+    const transitionMap = new Map<string, string>();
+    for (const t of this.data.transitions) {
+      transitionMap.set(`${t.fromStateId}|${t.symbol}`, t.toStateId);
+    }
+
+    // Process each symbol — using spread to correctly iterate Unicode code-points.
+    for (const symbol of [...input]) {
+      // Guard: symbol must be in Σ.
+      if (!this.data.alphabet.has(symbol)) {
+        throw new Error(
+          `DFA simulate error: symbol "${symbol}" is not in alphabet. ` +
+            `Alphabet: {${[...this.data.alphabet].join(', ')}}.`,
+        );
+      }
+
+      // Guard: transition must be defined (strict / complete DFA requirement).
+      const nextStateId = transitionMap.get(`${currentStateId}|${symbol}`);
+      if (nextStateId === undefined) {
+        throw new Error(
+          `DFA simulate error: no transition defined for ` +
+            `(state="${currentStateId}", symbol="${symbol}"). ` +
+            'Ensure the DFA is complete before simulating.',
+        );
+      }
+
+      currentStateId = nextStateId;
+    }
+
+    // Accept iff the final state is an accepting state.
+    return this.data.states.get(currentStateId)!.isAccepting;
   }
 }

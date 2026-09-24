@@ -17,13 +17,13 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] Clean up Vite boilerplate code — minimal dark-themed `App.tsx` header.
 * [x] Add `.gitignore` (excludes `node_modules/`, `dist/`, `coverage/`, `.env*`, logs).
 
-## Phase 2: Core Domain Logic (TDD Approach - No UI)
+## Phase 2: Core Domain Logic (TDD Approach - No UI) ✅ — *Completed 2026-09-24*
 
 * [x] Define TypeScript interfaces for Automata (`State`, `Transition`, `Automaton`) — `src/types/automata.ts`.
-* [x] (TDD Step 1) Write Vitest unit tests for DFA logic (adding states/transitions, processing valid/invalid strings) — `src/__tests__/dfa.test.ts` (13 tests ✓).
+* [x] (TDD Step 1) Write Vitest unit tests for DFA logic (adding states/transitions, processing valid/invalid strings) — `src/__tests__/dfa.test.ts` (26 tests ✓).
 * [x] (TDD Step 2) Implement DFA core logic to pass the tests — `src/core/DFA.ts`.
-* [ ] (TDD Step 1) Write Vitest unit tests for NFA logic and NFA-to-DFA conversion.
-* [ ] (TDD Step 2) Implement NFA core logic to pass the tests.
+* [x] (TDD Step 1) Write Vitest unit tests for NFA logic and NFA-to-DFA conversion — `src/__tests__/nfa.test.ts` (47 tests ✓).
+* [x] (TDD Step 2) Implement NFA core logic to pass the tests — `src/core/NFA.ts` (`addTransition`, `getEpsilonClosure`, `simulate`, `convertToDFA` via Rabin-Scott powerset construction).
 
 ## Phase 3: State Management
 
