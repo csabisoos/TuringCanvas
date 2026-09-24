@@ -1,0 +1,3 @@
+# Core domain logic — pure TypeScript, zero UI dependencies.
+# Modules here: dfa.ts, nfa.ts, etc.
+# Tests live in src/__tests__/ or co-located *.test.ts files.
