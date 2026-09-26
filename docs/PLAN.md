@@ -25,13 +25,13 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] (TDD Step 1) Write Vitest unit tests for NFA logic and NFA-to-DFA conversion — `src/__tests__/nfa.test.ts` (47 tests ✓).
 * [x] (TDD Step 2) Implement NFA core logic to pass the tests — `src/core/NFA.ts` (`addTransition`, `getEpsilonClosure`, `simulate`, `convertToDFA` via Rabin-Scott powerset construction).
 
-## Phase 3: State Management
+## Phase 3: State Management ✅ — *Completed 2026-09-26*
 
 * [x] Install and set up Zustand. — *Completed 2026-09-26*
 * [x] Define UI types (`AutomataNode`, `AutomataEdge`) in `src/types/ui.ts`. — *Completed 2026-09-26*
-* [x] Create a store to manage the current automaton's state (nodes, edges) — `src/store/useAutomataStore.ts` (9 tests ✓). — *Completed 2026-09-26*
-* [ ] Write tests for the Zustand store (serialization to JSON).
-* [ ] Implement Load/Save functionality to pass the tests.
+* [x] Create a store to manage the current automaton's state (nodes, edges) — `src/store/useAutomataStore.ts` (20 tests ✓). — *Completed 2026-09-26*
+* [x] Write tests for the Zustand store (serialization to JSON). — *Completed 2026-09-26*
+* [x] Implement Load/Save (`serialize`/`deserialize`) to pass the tests. — *Completed 2026-09-26*
 
 ## Phase 4: Visual Engine (Graph UI)
 
