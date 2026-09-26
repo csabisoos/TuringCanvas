@@ -35,9 +35,9 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 
 ## Phase 4: Visual Engine (Graph UI)
 
-* [ ] Install `reactflow` (React Flow).
-* [ ] Map Zustand store data to React Flow nodes and edges.
-* [ ] Implement custom Node components for Automata states (Start state, Accept state styling).
+* [x] Install `@xyflow/react` (React Flow v12). — *Completed 2026-09-26*
+* [x] Map Zustand store data to React Flow nodes and edges. — *Completed 2026-09-26*
+* [x] Implement custom Node components for Automata states (Start state, Accept state styling) — `src/components/canvas/StateNode.tsx`. — *Completed 2026-09-26*
 * [ ] Implement interactive edge creation (transitions between states).
 
 ## Phase 5: Application UI & Integration

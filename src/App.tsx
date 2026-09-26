@@ -1,10 +1,11 @@
 import type { ReactElement } from 'react';
+import { AutomataCanvas } from './components/canvas/AutomataCanvas';
 
 function App(): ReactElement {
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <header className="border-b border-gray-800 bg-gray-900 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3">
+    <div className="h-screen bg-gray-950 text-gray-100 flex flex-col overflow-hidden">
+      <header className="flex-none border-b border-gray-800 bg-gray-900 shadow-lg">
+        <div className="px-6 py-4 flex items-center gap-3">
           {/* Logo mark */}
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-sm select-none">
             TC
@@ -18,10 +19,8 @@ function App(): ReactElement {
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center">
-        <p className="text-gray-500 text-sm">
-          Canvas coming in Phase 4 — environment ready ✓
-        </p>
+      <main className="flex-1 overflow-hidden">
+        <AutomataCanvas />
       </main>
     </div>
   );
