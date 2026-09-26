@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
+import { buildAndSimulate } from './simulationAdapter';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
 
@@ -18,6 +19,22 @@ interface AutomataState {
   nodes: AutomataNode[];
   edges: AutomataEdge[];
   editorMode: EditorMode;
+
+  // ── Simulation state ──────────────────────────────────────────────────────
+  /** The set of node ids currently highlighted as "active" in the simulation. */
+  activeNodeIds: Set<string>;
+  /**
+   * Pre-computed traversal: one Set<string> per input symbol consumed.
+   * Index 0 is the initial ε-closure (before any symbol).
+   * Index 1..n map to symbols[0..n-1].
+   */
+  simulationSteps: Array<Set<string>>;
+  /** Points into simulationSteps; -1 means "not started". */
+  currentStepIndex: number;
+  /** Human-readable error set by startSimulation when the graph is invalid. */
+  simulationError: string | null;
+  /** Set to true/false after the last step is reached; null while in-progress. */
+  simulationAccepted: boolean | null;
 }
 
 interface AutomataActions {
@@ -50,16 +67,45 @@ interface AutomataActions {
    * Creates a new `AutomataEdge` with a default `ε` symbol.
    */
   onConnect: (connection: Connection) => void;
+
+  // ── Simulation actions ────────────────────────────────────────────────────
+  /**
+   * Builds an NFA from the current visual graph, computes the full step-by-step
+   * traversal for `input`, and initialises simulation state at step 0
+   * (the initial ε-closure, before any symbol is consumed).
+   *
+   * On success:  activeNodeIds = initial ε-closure, currentStepIndex = 0.
+   * On failure:  simulationError is populated, no other state changes.
+   */
+  startSimulation: (input: string) => void;
+  /**
+   * Advances the simulation by one step (one input symbol).
+   * No-ops if we are already past the last step.
+   */
+  stepForward: () => void;
+  /**
+   * Clears all simulation state back to the "not started" baseline.
+   */
+  resetSimulation: () => void;
 }
 
 type AutomataStore = AutomataState & AutomataActions;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+const SIMULATION_RESET = {
+  activeNodeIds: new Set<string>(),
+  simulationSteps: [] as Array<Set<string>>,
+  currentStepIndex: -1,
+  simulationError: null,
+  simulationAccepted: null,
+} as const;
+
 const INITIAL_STATE: AutomataState = {
   nodes: [],
   edges: [],
   editorMode: 'edit',
+  ...SIMULATION_RESET,
 };
 
 function parseAndValidate(json: string): SerializedGraph {
@@ -172,4 +218,68 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     };
     set((state) => ({ edges: [...state.edges, newEdge] }));
   },
+
+  // ── Simulation actions ──────────────────────────────────────────────────
+
+  startSimulation: (input) => {
+    const { nodes, edges } = get();
+
+    // Always reset before a new run.
+    const result = buildAndSimulate(nodes, edges, input);
+
+    if ('kind' in result) {
+      // Error path — surface a friendly message, leave graph unchanged.
+      const messages: Record<string, string> = {
+        NO_INITIAL_STATE: 'The graph must have exactly one initial state.',
+        EMPTY_ALPHABET:   'No transitions found — add at least one edge with a symbol.',
+        ENGINE_ERROR:     (result as { kind: string; message: string }).message,
+      };
+      set({
+        ...SIMULATION_RESET,
+        simulationError: messages[result.kind] ?? 'Unknown simulation error.',
+      });
+      return;
+    }
+
+    // Success: pre-pend the initial closure as step 0, then push per-symbol steps.
+    const allSteps: Array<Set<string>> = [result.initialStep, ...result.steps];
+
+    set({
+      simulationSteps: allSteps,
+      currentStepIndex: 0,
+      activeNodeIds: new Set(result.initialStep),
+      simulationError: null,
+      // accepted is only known after the last step
+      simulationAccepted: input.length === 0 ? result.accepted : null,
+    });
+  },
+
+  stepForward: () => {
+    const { simulationSteps, currentStepIndex, simulationAccepted } = get();
+    // No-op: not started, or already on the final step.
+    if (currentStepIndex < 0 || simulationAccepted !== null) return;
+
+    const nextIndex = currentStepIndex + 1;
+    if (nextIndex >= simulationSteps.length) return;
+
+    const nextActive = simulationSteps[nextIndex];
+    const isLast = nextIndex === simulationSteps.length - 1;
+
+    set((state) => {
+      const nodes = state.nodes;
+      const accepted = isLast
+        ? [...nextActive].some((id) => nodes.find((n) => n.id === id)?.isAccepting ?? false)
+        : null;
+      return {
+        currentStepIndex: nextIndex,
+        activeNodeIds: new Set(nextActive),
+        simulationAccepted: accepted,
+      };
+    });
+  },
+
+  resetSimulation: () => set(SIMULATION_RESET),
 }));
+
+
+

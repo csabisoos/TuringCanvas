@@ -1,6 +1,5 @@
 import { useState, type ReactElement } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function Sidebar(): ReactElement {
@@ -55,6 +54,28 @@ function EditPanel(): ReactElement {
 function SimulatePanel(): ReactElement {
   const [testInput, setTestInput] = useState('');
 
+  const startSimulation  = useAutomataStore((s) => s.startSimulation);
+  const stepForward      = useAutomataStore((s) => s.stepForward);
+  const resetSimulation  = useAutomataStore((s) => s.resetSimulation);
+  const currentStepIndex = useAutomataStore((s) => s.currentStepIndex);
+  const simulationSteps  = useAutomataStore((s) => s.simulationSteps);
+  const simulationError  = useAutomataStore((s) => s.simulationError);
+  const simulationAccepted = useAutomataStore((s) => s.simulationAccepted);
+
+  const isRunning = currentStepIndex >= 0;
+  const isFinished = simulationAccepted !== null;
+  const canStep = isRunning && !isFinished;
+  const stepLabel = `${Math.max(0, currentStepIndex)} / ${Math.max(0, simulationSteps.length - 1)}`;
+
+  function handleStart(): void {
+    startSimulation(testInput);
+  }
+
+  function handleReset(): void {
+    resetSimulation();
+    setTestInput('');
+  }
+
   return (
     <div className="flex flex-col gap-3 p-3">
       <SectionLabel>Test String</SectionLabel>
@@ -65,35 +86,72 @@ function SimulatePanel(): ReactElement {
           type="text"
           value={testInput}
           onChange={(e) => setTestInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleStart(); }}
+          disabled={isRunning}
           placeholder="e.g. aabb"
           aria-label="Input string to simulate"
-          className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
+          className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono disabled:opacity-40 disabled:cursor-not-allowed"
         />
+        {isRunning && (
+          <p className="text-[10px] text-gray-500 px-1 font-mono">
+            Step {stepLabel}
+          </p>
+        )}
       </div>
 
       <div className="my-1 border-t border-gray-800" />
 
       <SectionLabel>Controls</SectionLabel>
 
-      <SidebarButton id="simulate-start-btn" icon={<PlayIcon />} disabled>
+      <SidebarButton
+        id="simulate-start-btn"
+        icon={<PlayIcon />}
+        onClick={handleStart}
+        disabled={isRunning}
+      >
         Start
       </SidebarButton>
-      <SidebarButton id="simulate-step-btn" icon={<StepIcon />} disabled>
+      <SidebarButton
+        id="simulate-step-btn"
+        icon={<StepIcon />}
+        onClick={stepForward}
+        disabled={!canStep}
+      >
         Step
       </SidebarButton>
-      <SidebarButton id="simulate-reset-btn" icon={<ResetIcon />} disabled>
+      <SidebarButton
+        id="simulate-reset-btn"
+        icon={<ResetIcon />}
+        onClick={handleReset}
+        disabled={!isRunning && !simulationError}
+      >
         Reset
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
 
-      {/* Status placeholder */}
-      <div className="rounded-md bg-gray-800 border border-gray-700 px-3 py-2 text-xs text-gray-500 text-center select-none">
-        Result will appear here
-      </div>
+      {/* Result badge */}
+      {simulationError ? (
+        <div className="rounded-md bg-red-950 border border-red-800 px-3 py-2 text-xs text-red-300 text-center select-none leading-snug">
+          ⚠ {simulationError}
+        </div>
+      ) : simulationAccepted === true ? (
+        <div className="rounded-md bg-emerald-950 border border-emerald-700 px-3 py-2 text-xs text-emerald-300 text-center select-none font-semibold">
+          ✓ Accepted
+        </div>
+      ) : simulationAccepted === false ? (
+        <div className="rounded-md bg-red-950 border border-red-800 px-3 py-2 text-xs text-red-300 text-center select-none font-semibold">
+          ✗ Rejected
+        </div>
+      ) : (
+        <div className="rounded-md bg-gray-800 border border-gray-700 px-3 py-2 text-xs text-gray-500 text-center select-none">
+          {isRunning ? 'Stepping through…' : 'Press Start to run'}
+        </div>
+      )}
     </div>
   );
 }
+
 
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
@@ -111,6 +169,7 @@ interface SidebarButtonProps {
   children: string;
   disabled?: boolean;
   danger?: boolean;
+  onClick?: () => void;
 }
 
 function SidebarButton({
@@ -119,6 +178,7 @@ function SidebarButton({
   children,
   disabled = false,
   danger = false,
+  onClick,
 }: SidebarButtonProps): ReactElement {
   const base =
     'flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors duration-100 select-none text-left';
@@ -136,6 +196,7 @@ function SidebarButton({
       id={id}
       type="button"
       disabled={disabled}
+      onClick={onClick}
       className={[base, danger ? dangerCls : normal].join(' ')}
     >
       <span className="shrink-0 opacity-70">{icon}</span>
@@ -143,6 +204,7 @@ function SidebarButton({
     </button>
   );
 }
+
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 

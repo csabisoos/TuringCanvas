@@ -40,12 +40,13 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] Implement custom Node components for Automata states (Start state, Accept state styling) — `src/components/canvas/StateNode.tsx`. — *Completed 2026-09-26*
 * [x] Implement interactive node dragging and edge creation (transitions between states) — `onNodesChange`, `onEdgesChange`, `onConnect` wired through Zustand store. — *Completed 2026-09-26*
 
-## Phase 5: Application UI & Integration
+## Phase 5: Application UI & Integration ✅ — *Completed 2026-09-26*
 
 * [x] Build the main layout (Sidebar for tools, Canvas area, Topbar). — *Completed 2026-09-26*
 * [x] Create controls to switch between "Edit Mode" and "Simulate Mode". — *Completed 2026-09-26*
-* [ ] Integrate the Core Domain logic with the Visual Engine (run visual simulations).
-* [ ] Implement step-by-step simulation visual feedback (highlighting active nodes).
+* [x] Integrate the Core Domain logic with the Visual Engine (run visual simulations). — *Completed 2026-09-26*
+* [x] Implement step-by-step simulation visual feedback (highlighting active nodes). — *Completed 2026-09-26*
+
 
 ## Phase 6: PWA & Polish
 
