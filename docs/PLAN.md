@@ -27,9 +27,10 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 
 ## Phase 3: State Management
 
-* [ ] Install and set up Zustand.
-* [ ] Create a store to manage the current automaton's state (nodes, edges).
-* [ ] Write tests for the Zustand store (verifying state updates, serialization to JSON).
+* [x] Install and set up Zustand. — *Completed 2026-09-26*
+* [x] Define UI types (`AutomataNode`, `AutomataEdge`) in `src/types/ui.ts`. — *Completed 2026-09-26*
+* [x] Create a store to manage the current automaton's state (nodes, edges) — `src/store/useAutomataStore.ts` (9 tests ✓). — *Completed 2026-09-26*
+* [ ] Write tests for the Zustand store (serialization to JSON).
 * [ ] Implement Load/Save functionality to pass the tests.
 
 ## Phase 4: Visual Engine (Graph UI)
