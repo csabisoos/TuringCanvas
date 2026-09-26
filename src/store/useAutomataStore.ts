@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
+import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
@@ -28,6 +30,21 @@ interface AutomataActions {
    * The store is left **unmodified** when an error is thrown.
    */
   deserialize: (json: string) => void;
+  /**
+   * Handles React Flow node change events (drag, select, remove, etc.).
+   * Delegates to `applyNodeChanges` and writes the result back to the store.
+   */
+  onNodesChange: (changes: NodeChange[]) => void;
+  /**
+   * Handles React Flow edge change events (select, remove, etc.).
+   * Delegates to `applyEdgeChanges` and writes the result back to the store.
+   */
+  onEdgesChange: (changes: EdgeChange[]) => void;
+  /**
+   * Handles a new connection drawn between two handles.
+   * Creates a new `AutomataEdge` with a default `ε` symbol.
+   */
+  onConnect: (connection: Connection) => void;
 }
 
 type AutomataStore = AutomataState & AutomataActions;
@@ -85,5 +102,66 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     // Validate BEFORE touching the store — guarantees atomicity on error.
     const { nodes, edges } = parseAndValidate(json);
     set({ nodes, edges });
+  },
+
+  onNodesChange: (changes) => {
+    set((state) => {
+      // Build a minimal RF-compatible Node array so applyNodeChanges can work.
+      // We only need `id`, `position`, and `data` — RF adds the rest internally.
+      const rfNodes = state.nodes.map((n) => ({
+        id: n.id,
+        position: n.position,
+        data: {
+          label: n.label,
+          isInitial: n.isInitial,
+          isAccepting: n.isAccepting,
+        },
+        type: 'stateNode',
+      }));
+
+      const updated = applyNodeChanges(changes, rfNodes);
+
+      // Map back to AutomataNode, preserving domain fields.
+      const next: AutomataNode[] = updated.map((n) => ({
+        id: n.id,
+        position: { x: n.position.x, y: n.position.y },
+        label: (n.data as { label: string }).label,
+        isInitial: (n.data as { isInitial: boolean }).isInitial,
+        isAccepting: (n.data as { isAccepting: boolean }).isAccepting,
+      }));
+      return { nodes: next };
+    });
+  },
+
+  onEdgesChange: (changes) => {
+    set((state) => {
+      // AutomataEdge is structurally compatible with RF's Edge minimum shape.
+      const updated = applyEdgeChanges(
+        changes,
+        state.edges as Parameters<typeof applyEdgeChanges>[1],
+      );
+      // Map back: preserve the domain `symbols` field.
+      const edgeMap = new Map(state.edges.map((e) => [e.id, e]));
+      const next: AutomataEdge[] = updated.map((e) => {
+        const original = edgeMap.get(e.id);
+        return {
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          symbols: original?.symbols ?? [],
+        };
+      });
+      return { edges: next };
+    });
+  },
+
+  onConnect: (connection) => {
+    const newEdge: AutomataEdge = {
+      id: crypto.randomUUID(),
+      source: connection.source,
+      target: connection.target,
+      symbols: ['ε'],
+    };
+    set((state) => ({ edges: [...state.edges, newEdge] }));
   },
 }));

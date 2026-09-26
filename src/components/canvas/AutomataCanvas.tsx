@@ -74,6 +74,9 @@ function toFlowEdge(edge: {
 export function AutomataCanvas(): ReactElement {
   const storeNodes = useAutomataStore((s) => s.nodes);
   const storeEdges = useAutomataStore((s) => s.edges);
+  const onNodesChange = useAutomataStore((s) => s.onNodesChange);
+  const onEdgesChange = useAutomataStore((s) => s.onEdgesChange);
+  const onConnect = useAutomataStore((s) => s.onConnect);
 
   const flowNodes = storeNodes.map(toFlowNode);
   const flowEdges = storeEdges.map(toFlowEdge);
@@ -84,12 +87,11 @@ export function AutomataCanvas(): ReactElement {
         nodes={flowNodes}
         edges={flowEdges}
         nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
         fitView
         fitViewOptions={{ padding: 0.3 }}
-        // Dragging & edge creation are intentionally disabled in Phase 4 Part 1.
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
         proOptions={{ hideAttribution: false }}
       >
         <Background

@@ -33,12 +33,12 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] Write tests for the Zustand store (serialization to JSON). — *Completed 2026-09-26*
 * [x] Implement Load/Save (`serialize`/`deserialize`) to pass the tests. — *Completed 2026-09-26*
 
-## Phase 4: Visual Engine (Graph UI)
+## Phase 4: Visual Engine (Graph UI) ✅ — *Completed 2026-09-26*
 
 * [x] Install `@xyflow/react` (React Flow v12). — *Completed 2026-09-26*
 * [x] Map Zustand store data to React Flow nodes and edges. — *Completed 2026-09-26*
 * [x] Implement custom Node components for Automata states (Start state, Accept state styling) — `src/components/canvas/StateNode.tsx`. — *Completed 2026-09-26*
-* [ ] Implement interactive edge creation (transitions between states).
+* [x] Implement interactive node dragging and edge creation (transitions between states) — `onNodesChange`, `onEdgesChange`, `onConnect` wired through Zustand store. — *Completed 2026-09-26*
 
 ## Phase 5: Application UI & Integration
 
