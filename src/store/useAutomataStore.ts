@@ -12,15 +12,20 @@ interface SerializedGraph {
 
 // ── Store types ───────────────────────────────────────────────────────────────
 
+type EditorMode = 'edit' | 'simulate';
+
 interface AutomataState {
   nodes: AutomataNode[];
   edges: AutomataEdge[];
+  editorMode: EditorMode;
 }
 
 interface AutomataActions {
   addNode: (node: AutomataNode) => void;
   addEdge: (edge: AutomataEdge) => void;
   clearStore: () => void;
+  /** Switches the editor between 'edit' and 'simulate' modes. */
+  setEditorMode: (mode: EditorMode) => void;
   /** Returns a JSON string of the current nodes and edges. */
   serialize: () => string;
   /**
@@ -54,6 +59,7 @@ type AutomataStore = AutomataState & AutomataActions;
 const INITIAL_STATE: AutomataState = {
   nodes: [],
   edges: [],
+  editorMode: 'edit',
 };
 
 function parseAndValidate(json: string): SerializedGraph {
@@ -92,6 +98,8 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     set((state) => ({ edges: [...state.edges, edge] })),
 
   clearStore: () => set(INITIAL_STATE),
+
+  setEditorMode: (mode) => set({ editorMode: mode }),
 
   serialize: () => {
     const { nodes, edges } = get();

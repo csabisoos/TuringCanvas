@@ -77,6 +77,9 @@ export function AutomataCanvas(): ReactElement {
   const onNodesChange = useAutomataStore((s) => s.onNodesChange);
   const onEdgesChange = useAutomataStore((s) => s.onEdgesChange);
   const onConnect = useAutomataStore((s) => s.onConnect);
+  const editorMode = useAutomataStore((s) => s.editorMode);
+
+  const isSimulating = editorMode === 'simulate';
 
   const flowNodes = storeNodes.map(toFlowNode);
   const flowEdges = storeEdges.map(toFlowEdge);
@@ -90,6 +93,10 @@ export function AutomataCanvas(): ReactElement {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        // Disable all graph mutations in simulate mode
+        nodesDraggable={!isSimulating}
+        nodesConnectable={!isSimulating}
+        elementsSelectable={!isSimulating}
         fitView
         fitViewOptions={{ padding: 0.3 }}
         proOptions={{ hideAttribution: false }}
