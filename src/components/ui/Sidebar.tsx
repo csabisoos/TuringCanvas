@@ -6,7 +6,10 @@ export function Sidebar(): ReactElement {
   const editorMode = useAutomataStore((s) => s.editorMode);
 
   return (
-    <aside className="w-56 shrink-0 flex flex-col border-r border-gray-800 bg-gray-900 overflow-y-auto">
+    <aside
+      className="w-56 shrink-0 flex flex-col border-r border-gray-800 bg-gray-900 overflow-y-auto"
+      aria-label="Editor panel"
+    >
       {editorMode === 'edit' ? <EditPanel /> : <SimulatePanel />}
     </aside>
   );
@@ -19,30 +22,30 @@ function EditPanel(): ReactElement {
     <div className="flex flex-col gap-2 p-3">
       <SectionLabel>Graph</SectionLabel>
 
-      <SidebarButton id="sidebar-add-state-btn" icon={<CircleIcon />} disabled>
+      <SidebarButton id="sidebar-add-state-btn" icon={<CircleIcon />} aria-label="Add State" disabled>
         Add State
       </SidebarButton>
-      <SidebarButton id="sidebar-add-transition-btn" icon={<ArrowIcon />} disabled>
+      <SidebarButton id="sidebar-add-transition-btn" icon={<ArrowIcon />} aria-label="Add Transition" disabled>
         Add Transition
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
 
       <SectionLabel>Selection</SectionLabel>
-      <SidebarButton id="sidebar-mark-initial-btn" icon={<StarIcon />} disabled>
+      <SidebarButton id="sidebar-mark-initial-btn" icon={<StarIcon />} aria-label="Mark selected state as initial" disabled>
         Mark Initial
       </SidebarButton>
-      <SidebarButton id="sidebar-mark-accepting-btn" icon={<CheckCircleIcon />} disabled>
+      <SidebarButton id="sidebar-mark-accepting-btn" icon={<CheckCircleIcon />} aria-label="Mark selected state as accepting" disabled>
         Mark Accepting
       </SidebarButton>
-      <SidebarButton id="sidebar-delete-selected-btn" icon={<TrashIcon />} disabled danger>
+      <SidebarButton id="sidebar-delete-selected-btn" icon={<TrashIcon />} aria-label="Delete selected elements" disabled danger>
         Delete Selected
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
 
       <SectionLabel>Canvas</SectionLabel>
-      <SidebarButton id="sidebar-clear-btn" icon={<TrashIcon />} disabled danger>
+      <SidebarButton id="sidebar-clear-btn" icon={<TrashIcon />} aria-label="Clear all states and transitions" disabled danger>
         Clear All
       </SidebarButton>
     </div>
@@ -61,11 +64,13 @@ function SimulatePanel(): ReactElement {
   const simulationSteps  = useAutomataStore((s) => s.simulationSteps);
   const simulationError  = useAutomataStore((s) => s.simulationError);
   const simulationAccepted = useAutomataStore((s) => s.simulationAccepted);
+  // Disable simulation controls when no automaton has been drawn yet
+  const hasNodes = useAutomataStore((s) => s.nodes.length > 0);
 
   const isRunning = currentStepIndex >= 0;
   const isFinished = simulationAccepted !== null;
   const canStep = isRunning && !isFinished;
-  const stepLabel = `${Math.max(0, currentStepIndex)} / ${Math.max(0, simulationSteps.length - 1)}`;
+  const stepLabel = `${String(Math.max(0, currentStepIndex))} / ${String(Math.max(0, simulationSteps.length - 1))}`;
 
   function handleStart(): void {
     startSimulation(testInput);
@@ -76,6 +81,11 @@ function SimulatePanel(): ReactElement {
     setTestInput('');
   }
 
+  // Start is disabled: no nodes exist, or simulation is already running
+  const startDisabled = !hasNodes || isRunning;
+  // Reset is enabled once a simulation has been initiated (running or errored)
+  const resetDisabled = !isRunning && !simulationError;
+
   return (
     <div className="flex flex-col gap-3 p-3">
       <SectionLabel>Test String</SectionLabel>
@@ -85,15 +95,16 @@ function SimulatePanel(): ReactElement {
           id="simulate-input"
           type="text"
           value={testInput}
-          onChange={(e) => setTestInput(e.target.value)}
+          onChange={(e) => { setTestInput(e.target.value); }}
           onKeyDown={(e) => { if (e.key === 'Enter') handleStart(); }}
-          disabled={isRunning}
+          disabled={isRunning || !hasNodes}
           placeholder="e.g. aabb"
           aria-label="Input string to simulate"
+          aria-describedby={isRunning ? 'simulate-step-counter' : undefined}
           className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono disabled:opacity-40 disabled:cursor-not-allowed"
         />
         {isRunning && (
-          <p className="text-[10px] text-gray-500 px-1 font-mono">
+          <p id="simulate-step-counter" className="text-[10px] text-gray-500 px-1 font-mono">
             Step {stepLabel}
           </p>
         )}
@@ -106,14 +117,16 @@ function SimulatePanel(): ReactElement {
       <SidebarButton
         id="simulate-start-btn"
         icon={<PlayIcon />}
+        aria-label="Start simulation"
         onClick={handleStart}
-        disabled={isRunning}
+        disabled={startDisabled}
       >
         Start
       </SidebarButton>
       <SidebarButton
         id="simulate-step-btn"
         icon={<StepIcon />}
+        aria-label="Step forward one symbol"
         onClick={stepForward}
         disabled={!canStep}
       >
@@ -122,32 +135,35 @@ function SimulatePanel(): ReactElement {
       <SidebarButton
         id="simulate-reset-btn"
         icon={<ResetIcon />}
+        aria-label="Reset simulation"
         onClick={handleReset}
-        disabled={!isRunning && !simulationError}
+        disabled={resetDisabled}
       >
         Reset
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
 
-      {/* Result badge */}
-      {simulationError ? (
-        <div className="rounded-md bg-red-950 border border-red-800 px-3 py-2 text-xs text-red-300 text-center select-none leading-snug">
-          ⚠ {simulationError}
-        </div>
-      ) : simulationAccepted === true ? (
-        <div className="rounded-md bg-emerald-950 border border-emerald-700 px-3 py-2 text-xs text-emerald-300 text-center select-none font-semibold">
-          ✓ Accepted
-        </div>
-      ) : simulationAccepted === false ? (
-        <div className="rounded-md bg-red-950 border border-red-800 px-3 py-2 text-xs text-red-300 text-center select-none font-semibold">
-          ✗ Rejected
-        </div>
-      ) : (
-        <div className="rounded-md bg-gray-800 border border-gray-700 px-3 py-2 text-xs text-gray-500 text-center select-none">
-          {isRunning ? 'Stepping through…' : 'Press Start to run'}
-        </div>
-      )}
+      {/* Result badge — aria-live so screen readers announce state changes */}
+      <div role="status" aria-live="polite" aria-atomic="true">
+        {simulationError ? (
+          <div className="rounded-md bg-red-950 border border-red-800 px-3 py-2 text-xs text-red-300 text-center select-none leading-snug">
+            ⚠ {simulationError}
+          </div>
+        ) : simulationAccepted === true ? (
+          <div className="rounded-md bg-emerald-950 border border-emerald-700 px-3 py-2 text-xs text-emerald-300 text-center select-none font-semibold">
+            ✓ Accepted
+          </div>
+        ) : simulationAccepted === false ? (
+          <div className="rounded-md bg-red-950 border border-red-800 px-3 py-2 text-xs text-red-300 text-center select-none font-semibold">
+            ✗ Rejected
+          </div>
+        ) : (
+          <div className="rounded-md bg-gray-800 border border-gray-700 px-3 py-2 text-xs text-gray-500 text-center select-none">
+            {isRunning ? 'Stepping through…' : 'Press Start to run'}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -167,6 +183,7 @@ interface SidebarButtonProps {
   id: string;
   icon: ReactElement;
   children: string;
+  'aria-label': string;
   disabled?: boolean;
   danger?: boolean;
   onClick?: () => void;
@@ -176,18 +193,19 @@ function SidebarButton({
   id,
   icon,
   children,
+  'aria-label': ariaLabel,
   disabled = false,
   danger = false,
   onClick,
 }: SidebarButtonProps): ReactElement {
   const base =
-    'flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors duration-100 select-none text-left';
+    'flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors duration-100 select-none text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900';
   const normal = disabled
-    ? 'text-gray-600 cursor-not-allowed'
+    ? 'text-gray-600 cursor-not-allowed opacity-50'
     : 'text-gray-300 hover:bg-gray-800 hover:text-white cursor-pointer';
   const dangerCls = danger
     ? disabled
-      ? 'text-red-900 cursor-not-allowed'
+      ? 'text-red-900 cursor-not-allowed opacity-50'
       : 'text-red-400 hover:bg-red-950 hover:text-red-300'
     : '';
 
@@ -197,9 +215,10 @@ function SidebarButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
+      aria-label={ariaLabel}
       className={[base, danger ? dangerCls : normal].join(' ')}
     >
-      <span className="shrink-0 opacity-70">{icon}</span>
+      <span className="shrink-0 opacity-70" aria-hidden="true">{icon}</span>
       {children}
     </button>
   );

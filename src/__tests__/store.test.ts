@@ -3,7 +3,7 @@ import { useAutomataStore } from '../store/useAutomataStore';
 
 // Access the raw store API directly (no React hooks needed).
 // Zustand exposes getState/setState on the hook itself.
-const getState = () => useAutomataStore.getState();
+const getState = (): ReturnType<typeof useAutomataStore.getState> => useAutomataStore.getState();
 
 describe('useAutomataStore', () => {
   beforeEach(() => {
@@ -209,7 +209,7 @@ describe('useAutomataStore', () => {
     it('should throw on invalid JSON and leave the store unmodified', () => {
       getState().addNode({ id: 'q0', position: { x: 0, y: 0 }, label: 'q0', isInitial: true, isAccepting: false });
 
-      expect(() => getState().deserialize('not json {')).toThrow();
+      expect(() => { getState().deserialize('not json {'); }).toThrow();
 
       // Store must remain intact.
       expect(getState().nodes).toHaveLength(1);
@@ -217,24 +217,22 @@ describe('useAutomataStore', () => {
     });
 
     it('should throw when the payload is missing the "nodes" key', () => {
-      expect(() => getState().deserialize(JSON.stringify({ edges: [] }))).toThrow();
+      expect(() => { getState().deserialize(JSON.stringify({ edges: [] })); }).toThrow();
       expect(getState().nodes).toEqual([]);
     });
 
     it('should throw when the payload is missing the "edges" key', () => {
-      expect(() => getState().deserialize(JSON.stringify({ nodes: [] }))).toThrow();
+      expect(() => { getState().deserialize(JSON.stringify({ nodes: [] })); }).toThrow();
       expect(getState().nodes).toEqual([]);
     });
 
     it('should throw when "nodes" is not an array', () => {
-      expect(() =>
-        getState().deserialize(JSON.stringify({ nodes: 'bad', edges: [] })),
+      expect(() => { getState().deserialize(JSON.stringify({ nodes: 'bad', edges: [] })); },
       ).toThrow();
     });
 
     it('should throw when "edges" is not an array', () => {
-      expect(() =>
-        getState().deserialize(JSON.stringify({ nodes: [], edges: 42 })),
+      expect(() => { getState().deserialize(JSON.stringify({ nodes: [], edges: 42 })); },
       ).toThrow();
     });
   });

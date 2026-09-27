@@ -34,7 +34,7 @@ export interface SimulationResult {
    * One entry per input symbol.  steps[i] = active node ids after consuming
    * input[i].  Empty set means the NFA is in a dead (reject) configuration.
    */
-  steps: Array<Set<string>>;
+  steps: Set<string>[];
   /** Whether the NFA accepted the full input string. */
   accepted: boolean;
 }
@@ -82,11 +82,12 @@ export function buildAndSimulate(
   if (alphabet.size === 0) {
     // Use each unique char of the input itself as the "alphabet" so the engine
     // can process it without invariant violation.
-    for (const ch of [...input]) {
+    for (const ch of Array.from(input)) {
       if (ch !== 'ε') alphabet.add(ch);
     }
     // Still empty? The input is either empty or only 'ε' characters.
     // Use a placeholder that will never appear in the input so simulation works.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- size may be > 0 after the loop
     if (alphabet.size === 0) {
       alphabet.add('\x00');
     }
@@ -123,19 +124,23 @@ export function buildAndSimulate(
   // We replicate the NFA simulation loop here so we can capture intermediate
   // state sets. The core NFA.simulate() only returns a boolean.
 
-  const initialId = nodes.find((n) => n.isInitial)!.id;
-  const initialClosure = nfa.getEpsilonClosure(new Set([initialId]));
-  const steps: Array<Set<string>> = [];
+  // We know exactly one initial node exists (the guard above confirmed it).
+  // Use a local variable to make it explicit and avoid the non-null assertion.
+  const initialNode = nodes.find((n) => n.isInitial);
+  if (initialNode === undefined) return { kind: 'NO_INITIAL_STATE' };
+
+  const initialClosure = nfa.getEpsilonClosure(new Set([initialNode.id]));
+  const steps: Set<string>[] = [];
   let currentStates = initialClosure;
 
-  for (const symbol of [...input]) {
+  for (const symbol of Array.from(input)) {
     const normSym = symbol === 'ε' ? EPSILON : symbol;
 
     // Symbol not in alphabet → reject immediately.
     if (!alphabet.has(normSym)) {
       steps.push(new Set<string>());
       // Remaining symbols are all dead.
-      const remaining = [...input].length - steps.length;
+      const remaining = Array.from(input).length - steps.length;
       for (let i = 0; i < remaining; i++) {
         steps.push(new Set<string>());
       }

@@ -52,7 +52,7 @@ export class NFA {
     const initialCount = states.filter((s) => s.isInitial).length;
     if (initialCount !== 1) {
       throw new Error(
-        `NFA invariant violated: expected exactly 1 initial state, got ${initialCount}.`,
+        `NFA invariant violated: expected exactly 1 initial state, got ${String(initialCount)}.`,
       );
     }
 
@@ -149,7 +149,9 @@ export class NFA {
     const worklist: string[] = [...states];   // queue of states to expand
 
     while (worklist.length > 0) {
-      const current = worklist.pop()!;
+      // worklist.length > 0 guarantees pop() is defined.
+      const current = worklist.pop();
+      if (current === undefined) break;
       const neighbors = epsilonEdges.get(current);
       if (neighbors === undefined) continue;
 
@@ -198,10 +200,14 @@ export class NFA {
    */
   simulate(input: string): boolean {
     // Initial state + its epsilon closure.
-    const initialId = [...this.data.states.values()].find(s => s.isInitial)!.id;
-    let currentStates = this.getEpsilonClosure(new Set([initialId]));
+    // The constructor guarantees exactly one initial state exists.
+    const initialState = [...this.data.states.values()].find((s) => s.isInitial);
+    if (initialState === undefined) {
+      throw new Error('NFA simulate: no initial state found (should be impossible).');
+    }
+    let currentStates = this.getEpsilonClosure(new Set([initialState.id]));
 
-    for (const symbol of [...input]) {
+    for (const symbol of Array.from(input)) {
       // Guard: symbol must be in Σ.
       if (!this.data.alphabet.has(symbol)) {
         throw new Error(
@@ -219,9 +225,10 @@ export class NFA {
     }
 
     // Accept iff at least one current state is an accepting state.
-    return [...currentStates].some(
-      id => this.data.states.get(id)!.isAccepting,
-    );
+    return [...currentStates].some((id) => {
+      const state = this.data.states.get(id);
+      return state?.isAccepting ?? false;
+    });
   }
 
   /**
@@ -249,8 +256,11 @@ export class NFA {
     // ---- Powerset construction (BFS over subsets) ----
 
     // Start state of the DFA = ε-closure of the NFA's initial state.
-    const initialNFAId = [...this.data.states.values()].find(s => s.isInitial)!.id;
-    const startSubset  = this.getEpsilonClosure(new Set([initialNFAId]));
+    const initialNFAState = [...this.data.states.values()].find((s) => s.isInitial);
+    if (initialNFAState === undefined) {
+      throw new Error('NFA convertToDFA: no initial state found (should be impossible).');
+    }
+    const startSubset  = this.getEpsilonClosure(new Set([initialNFAState.id]));
     const startKey     = setKey(startSubset);
 
     // Maps DFA state key → the NFA subset it represents.
@@ -263,8 +273,10 @@ export class NFA {
     const worklist: string[] = [startKey];
 
     while (worklist.length > 0) {
-      const currentKey    = worklist.pop()!;
-      const currentSubset = subsetMap.get(currentKey)!;
+      const currentKey    = worklist.pop();
+      if (currentKey === undefined) break;
+      const currentSubset = subsetMap.get(currentKey);
+      if (currentSubset === undefined) continue;
       const row           = new Map<string, string>();
       transTable.set(currentKey, row);
 
@@ -288,11 +300,11 @@ export class NFA {
     // ---- Build the DFA instance ----
 
     // Create State objects for each DFA macro-state.
-    const dfaStates: State[] = [...subsetMap.keys()].map(key => ({
+    const dfaStates: State[] = [...subsetMap.keys()].map((key) => ({
       id:          key,
       name:        key,
       isInitial:   key === startKey,
-      isAccepting: isAcceptingSubset(subsetMap.get(key)!),
+      isAccepting: isAcceptingSubset(subsetMap.get(key) ?? new Set<string>()),
     }));
 
     const dfa = new DFA(dfaStates, new Set(this.data.alphabet));

@@ -11,13 +11,17 @@ export function Topbar(): ReactElement {
     <header className="flex-none h-14 border-b border-gray-800 bg-gray-900 flex items-center px-4 gap-4 shadow-lg z-10">
       {/* Brand */}
       <div className="flex items-center gap-2.5 min-w-0">
-        <div className="w-7 h-7 rounded-md bg-indigo-600 flex items-center justify-center font-bold text-white text-xs select-none shrink-0">
+        <div
+          className="w-7 h-7 rounded-md bg-indigo-600 flex items-center justify-center font-bold text-white text-xs select-none shrink-0"
+          role="img"
+          aria-label="TuringCanvas logo"
+        >
           TC
         </div>
         <span className="text-base font-semibold tracking-tight text-white truncate">
           TuringCanvas
         </span>
-        <span className="px-1.5 py-0.5 rounded-full bg-indigo-950 text-indigo-400 text-[10px] font-medium border border-indigo-800 shrink-0">
+        <span className="px-1.5 py-0.5 rounded-full bg-indigo-950 text-indigo-400 text-[10px] font-medium border border-indigo-800 shrink-0" aria-label="alpha release">
           alpha
         </span>
       </div>
@@ -34,16 +38,18 @@ export function Topbar(): ReactElement {
         <ModeButton
           id="mode-edit-btn"
           label="Edit"
+          ariaLabel="Switch to Edit Mode"
           icon={<PencilIcon />}
           active={editorMode === 'edit'}
-          onClick={() => setEditorMode('edit')}
+          onClick={() => { setEditorMode('edit'); }}
         />
         <ModeButton
           id="mode-simulate-btn"
           label="Simulate"
+          ariaLabel="Switch to Simulate Mode"
           icon={<PlayIcon />}
           active={editorMode === 'simulate'}
-          onClick={() => setEditorMode('simulate')}
+          onClick={() => { setEditorMode('simulate'); }}
         />
       </div>
     </header>
@@ -55,20 +61,23 @@ export function Topbar(): ReactElement {
 interface ModeButtonProps {
   id: string;
   label: string;
+  ariaLabel: string;
   icon: ReactElement;
   active: boolean;
   onClick: () => void;
 }
 
-function ModeButton({ id, label, icon, active, onClick }: ModeButtonProps): ReactElement {
+function ModeButton({ id, label, ariaLabel, icon, active, onClick }: ModeButtonProps): ReactElement {
   return (
     <button
       id={id}
       type="button"
       onClick={onClick}
       aria-pressed={active}
+      aria-label={ariaLabel}
       className={[
         'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150 select-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-1 focus-visible:ring-offset-gray-800',
         active
           ? 'bg-indigo-600 text-white shadow-sm'
           : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700',

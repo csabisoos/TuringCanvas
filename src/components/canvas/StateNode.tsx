@@ -20,8 +20,23 @@ export function StateNode({ id, data }: NodeProps<Node<StateNodeData>>): ReactEl
   // Derive active status directly from the store — no prop drilling needed.
   const isActive = useAutomataStore((s) => s.activeNodeIds.has(id));
 
+  // Build a descriptive label for screen readers
+  const stateType = isInitial && isAccepting
+    ? 'initial and accepting state'
+    : isInitial
+    ? 'initial state'
+    : isAccepting
+    ? 'accepting state'
+    : 'state';
+  const activeDescription = isActive ? ', currently active' : '';
+  const nodeAriaLabel = `${label}: ${stateType}${activeDescription}`;
+
   return (
-    <div className="relative flex items-center justify-center">
+    <div
+      className="relative flex items-center justify-center"
+      role="img"
+      aria-label={nodeAriaLabel}
+    >
       {/* Initial-state arrow indicator */}
       {isInitial && (
         <div className="absolute -left-10 flex items-center" aria-label="Initial state">

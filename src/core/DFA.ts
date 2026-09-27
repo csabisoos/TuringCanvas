@@ -46,7 +46,7 @@ export class DFA {
     const initialStates = states.filter((s) => s.isInitial);
     if (initialStates.length !== 1) {
       throw new Error(
-        `DFA invariant violated: expected exactly 1 initial state, got ${initialStates.length}.`,
+        `DFA invariant violated: expected exactly 1 initial state, got ${String(initialStates.length)}.`,
       );
     }
 
@@ -117,9 +117,11 @@ export class DFA {
    */
   simulate(input: string): boolean {
     // Locate the unique initial state (constructor guarantees exactly one).
-    let currentStateId = [...this.data.states.values()].find(
-      (s) => s.isInitial,
-    )!.id;
+    const initialStateEntry = [...this.data.states.values()].find((s) => s.isInitial);
+    if (initialStateEntry === undefined) {
+      throw new Error('DFA simulate: no initial state found (should be impossible).');
+    }
+    let currentStateId = initialStateEntry.id;
 
     // Build a lookup map for O(1) transition resolution.
     // Key: "<fromStateId>|<symbol>"
@@ -128,8 +130,8 @@ export class DFA {
       transitionMap.set(`${t.fromStateId}|${t.symbol}`, t.toStateId);
     }
 
-    // Process each symbol — using spread to correctly iterate Unicode code-points.
-    for (const symbol of [...input]) {
+    // Process each symbol — using Array.from to correctly iterate Unicode code-points.
+    for (const symbol of Array.from(input)) {
       // Guard: symbol must be in Σ.
       if (!this.data.alphabet.has(symbol)) {
         throw new Error(
@@ -152,6 +154,7 @@ export class DFA {
     }
 
     // Accept iff the final state is an accepting state.
-    return this.data.states.get(currentStateId)!.isAccepting;
+    const finalState = this.data.states.get(currentStateId);
+    return finalState?.isAccepting ?? false;
   }
 }

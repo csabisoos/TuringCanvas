@@ -16,7 +16,7 @@ import type { StateNodeData } from './StateNode';
 // ── Custom node registry ──────────────────────────────────────────────────────
 
 /** Alias that satisfies React Flow's ComponentType constraint for nodeTypes. */
-type AnyNodeProps = NodeProps<Node<Record<string, unknown>>>;
+type AnyNodeProps = NodeProps;
 
 const nodeTypes: NodeTypes = {
   stateNode: StateNode as ComponentType<AnyNodeProps>,

@@ -125,26 +125,26 @@ describe('NFA — addTransition (invalid)', () => {
   });
 
   it('throws when the symbol is not in the alphabet (and is not EPSILON)', () => {
-    expect(() => nfa.addTransition('q0', 'q1', 'x')).toThrow(
+    expect(() => { nfa.addTransition('q0', 'q1', 'x'); }).toThrow(
       /symbol .* not in alphabet/i,
     );
   });
 
   it('throws when the fromState does not exist', () => {
-    expect(() => nfa.addTransition('q99', 'q1', 'a')).toThrow(
+    expect(() => { nfa.addTransition('q99', 'q1', 'a'); }).toThrow(
       /state .* does not exist/i,
     );
   });
 
   it('throws when the toState does not exist', () => {
-    expect(() => nfa.addTransition('q0', 'q99', 'a')).toThrow(
+    expect(() => { nfa.addTransition('q0', 'q99', 'a'); }).toThrow(
       /state .* does not exist/i,
     );
   });
 
   it('does NOT throw for duplicate (fromState, symbol) pairs — NFAs are non-deterministic', () => {
     nfa.addTransition('q0', 'q1', 'a');
-    expect(() => nfa.addTransition('q0', 'q2', 'a')).not.toThrow();
+    expect(() => { nfa.addTransition('q0', 'q2', 'a'); }).not.toThrow();
   });
 });
 

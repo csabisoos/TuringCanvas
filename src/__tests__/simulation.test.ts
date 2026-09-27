@@ -64,7 +64,7 @@ function makeEpsilonGraph(): { nodes: AutomataNode[]; edges: AutomataEdge[] } {
 
 // ── Store helpers ─────────────────────────────────────────────────────────────
 
-const getState = () => useAutomataStore.getState();
+const getState = (): ReturnType<typeof useAutomataStore.getState> => useAutomataStore.getState();
 
 function seedStore(nodes: AutomataNode[], edges: AutomataEdge[]): void {
   getState().clearStore();

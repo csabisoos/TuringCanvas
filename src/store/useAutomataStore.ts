@@ -28,7 +28,7 @@ interface AutomataState {
    * Index 0 is the initial ε-closure (before any symbol).
    * Index 1..n map to symbols[0..n-1].
    */
-  simulationSteps: Array<Set<string>>;
+  simulationSteps: Set<string>[];
   /** Points into simulationSteps; -1 means "not started". */
   currentStepIndex: number;
   /** Human-readable error set by startSimulation when the graph is invalid. */
@@ -95,7 +95,7 @@ type AutomataStore = AutomataState & AutomataActions;
 
 const SIMULATION_RESET = {
   activeNodeIds: new Set<string>(),
-  simulationSteps: [] as Array<Set<string>>,
+  simulationSteps: [] as Set<string>[],
   currentStepIndex: -1,
   simulationError: null,
   simulationAccepted: null,
@@ -118,17 +118,17 @@ function parseAndValidate(json: string): SerializedGraph {
 
   const obj = raw as Record<string, unknown>;
 
-  if (!Array.isArray(obj['nodes'])) {
+  if (!Array.isArray(obj.nodes)) {
     throw new TypeError('Deserialization error: "nodes" must be an array.');
   }
 
-  if (!Array.isArray(obj['edges'])) {
+  if (!Array.isArray(obj.edges)) {
     throw new TypeError('Deserialization error: "edges" must be an array.');
   }
 
   return {
-    nodes: obj['nodes'] as AutomataNode[],
-    edges: obj['edges'] as AutomataEdge[],
+    nodes: obj.nodes as AutomataNode[],
+    edges: obj.edges as AutomataEdge[],
   };
 }
 
@@ -137,28 +137,30 @@ function parseAndValidate(json: string): SerializedGraph {
 export const useAutomataStore = create<AutomataStore>()((set, get) => ({
   ...INITIAL_STATE,
 
-  addNode: (node) =>
-    set((state) => ({ nodes: [...state.nodes, node] })),
+  addNode: (node): void => {
+    set((state) => ({ nodes: [...state.nodes, node] }));
+  },
 
-  addEdge: (edge) =>
-    set((state) => ({ edges: [...state.edges, edge] })),
+  addEdge: (edge): void => {
+    set((state) => ({ edges: [...state.edges, edge] }));
+  },
 
-  clearStore: () => set(INITIAL_STATE),
+  clearStore: (): void => { set(INITIAL_STATE); },
 
-  setEditorMode: (mode) => set({ editorMode: mode }),
+  setEditorMode: (mode): void => { set({ editorMode: mode }); },
 
-  serialize: () => {
+  serialize: (): string => {
     const { nodes, edges } = get();
     return JSON.stringify({ nodes, edges });
   },
 
-  deserialize: (json) => {
+  deserialize: (json): void => {
     // Validate BEFORE touching the store — guarantees atomicity on error.
     const { nodes, edges } = parseAndValidate(json);
     set({ nodes, edges });
   },
 
-  onNodesChange: (changes) => {
+  onNodesChange: (changes): void => {
     set((state) => {
       // Build a minimal RF-compatible Node array so applyNodeChanges can work.
       // We only need `id`, `position`, and `data` — RF adds the rest internally.
@@ -187,7 +189,7 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     });
   },
 
-  onEdgesChange: (changes) => {
+  onEdgesChange: (changes): void => {
     set((state) => {
       // AutomataEdge is structurally compatible with RF's Edge minimum shape.
       const updated = applyEdgeChanges(
@@ -209,7 +211,7 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     });
   },
 
-  onConnect: (connection) => {
+  onConnect: (connection): void => {
     const newEdge: AutomataEdge = {
       id: crypto.randomUUID(),
       source: connection.source,
@@ -221,7 +223,7 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
 
   // ── Simulation actions ──────────────────────────────────────────────────
 
-  startSimulation: (input) => {
+  startSimulation: (input): void => {
     const { nodes, edges } = get();
 
     // Always reset before a new run.
@@ -242,7 +244,7 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     }
 
     // Success: pre-pend the initial closure as step 0, then push per-symbol steps.
-    const allSteps: Array<Set<string>> = [result.initialStep, ...result.steps];
+    const allSteps: Set<string>[] = [result.initialStep, ...result.steps];
 
     set({
       simulationSteps: allSteps,
@@ -254,7 +256,7 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     });
   },
 
-  stepForward: () => {
+  stepForward: (): void => {
     const { simulationSteps, currentStepIndex, simulationAccepted } = get();
     // No-op: not started, or already on the final step.
     if (currentStepIndex < 0 || simulationAccepted !== null) return;
@@ -266,7 +268,7 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     const isLast = nextIndex === simulationSteps.length - 1;
 
     set((state) => {
-      const nodes = state.nodes;
+      const { nodes } = state;
       const accepted = isLast
         ? [...nextActive].some((id) => nodes.find((n) => n.id === id)?.isAccepting ?? false)
         : null;
@@ -278,8 +280,5 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     });
   },
 
-  resetSimulation: () => set(SIMULATION_RESET),
+  resetSimulation: (): void => { set(SIMULATION_RESET); },
 }));
-
-
-

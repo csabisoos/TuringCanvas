@@ -82,7 +82,7 @@ export interface DFAData {
 export interface NFATransition {
   fromStateId: string;
   /** Alphabet symbol consumed, or `EPSILON` (`""`) for an ε-transition. */
-  symbol: string | EpsilonSymbol;
+  symbol: string;
   toStateId: string;
 }
 

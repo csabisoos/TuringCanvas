@@ -99,19 +99,19 @@ describe('DFA — addTransition (invalid)', () => {
   });
 
   it('throws when the symbol is not in the alphabet', () => {
-    expect(() => dfa.addTransition('q0', 'q1', 'x')).toThrow(
+    expect(() => { dfa.addTransition('q0', 'q1', 'x'); }).toThrow(
       /symbol .* not in alphabet/i,
     );
   });
 
   it('throws when the fromState does not exist', () => {
-    expect(() => dfa.addTransition('q99', 'q1', '0')).toThrow(
+    expect(() => { dfa.addTransition('q99', 'q1', '0'); }).toThrow(
       /state .* does not exist/i,
     );
   });
 
   it('throws when the toState does not exist', () => {
-    expect(() => dfa.addTransition('q0', 'q99', '0')).toThrow(
+    expect(() => { dfa.addTransition('q0', 'q99', '0'); }).toThrow(
       /state .* does not exist/i,
     );
   });
@@ -119,7 +119,7 @@ describe('DFA — addTransition (invalid)', () => {
   it('throws when a duplicate transition (same fromState + symbol) already exists', () => {
     dfa.addTransition('q0', 'q1', '0');
     // In a DFA, δ must be a function — no two transitions share (from, symbol).
-    expect(() => dfa.addTransition('q0', 'q2', '0')).toThrow(
+    expect(() => { dfa.addTransition('q0', 'q2', '0'); }).toThrow(
       /transition .* already defined/i,
     );
   });
