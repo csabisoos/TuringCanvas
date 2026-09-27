@@ -40,6 +40,7 @@ interface AutomataState {
 interface AutomataActions {
   addNode: (node: AutomataNode) => void;
   addEdge: (edge: AutomataEdge) => void;
+  updateEdgeSymbols: (edgeId: string, symbols: string[]) => void;
   /** Sets the node with `id` as the only initial state (clears others). */
   markInitial: (id: string) => void;
   /** Toggles the accepting status of the node with `id`. */
@@ -149,6 +150,14 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
 
   addEdge: (edge): void => {
     set((state) => ({ edges: [...state.edges, edge] }));
+  },
+
+  updateEdgeSymbols: (edgeId, symbols): void => {
+    set((state) => ({
+      edges: state.edges.map((e) =>
+        e.id === edgeId ? { ...e, symbols } : e,
+      ),
+    }));
   },
 
   markInitial: (id): void => {

@@ -12,6 +12,7 @@ import '@xyflow/react/dist/style.css';
 import { useAutomataStore } from '../../store/useAutomataStore';
 import { StateNode } from './StateNode';
 import type { StateNodeData } from './StateNode';
+import { EditableEdge } from './EditableEdge';
 
 // ── Custom node registry ──────────────────────────────────────────────────────
 
@@ -20,6 +21,10 @@ type AnyNodeProps = NodeProps;
 
 const nodeTypes: NodeTypes = {
   stateNode: StateNode as ComponentType<AnyNodeProps>,
+};
+
+const edgeTypes = {
+  editableEdge: EditableEdge,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -62,7 +67,7 @@ function toFlowEdge(edge: {
     source: edge.source,
     target: edge.target,
     label: edge.symbols.join(', '),
-    type: 'default',
+    type: 'editableEdge',
     style: { stroke: '#818cf8', strokeWidth: 2 }, // indigo-400
     labelStyle: { fill: '#e0e7ff', fontSize: 12 }, // indigo-100
     labelBgStyle: { fill: '#1e1b4b', fillOpacity: 0.85 }, // indigo-950
@@ -90,6 +95,7 @@ export function AutomataCanvas(): ReactElement {
         nodes={flowNodes}
         edges={flowEdges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
