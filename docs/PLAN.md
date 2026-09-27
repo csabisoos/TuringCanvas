@@ -48,9 +48,9 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] Implement step-by-step simulation visual feedback (highlighting active nodes). — *Completed 2026-09-26*
 
 
-## Phase 6: PWA & Polish
+## Phase 6: PWA & Polish ✅ — *Completed 2026-09-27*
 
 * [x] Install `vite-plugin-pwa` and configure service workers for 100% offline use. — *Completed 2026-09-27*
 * [x] Add web manifest (icons, name, theme colors). — *Completed 2026-09-27*
 * [x] Final bug fixes, accessibility (a11y) improvements, and UI polish. — *Completed 2026-09-27*
-* [ ] Deploy to GitHub Pages or Vercel.
+* [x] Deploy to GitHub Pages via GitHub Actions CI/CD (`.github/workflows/deploy.yml`). — *Completed 2026-09-27*

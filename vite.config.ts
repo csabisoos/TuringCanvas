@@ -3,8 +3,15 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// When running inside GitHub Actions the GITHUB_ACTIONS env var is set to
+// the string "true". We use this to derive the correct base path so that
+// the app works both locally (base: '/') and on GitHub Pages (base: '/TuringCanvas/').
+const isCI = process.env['GITHUB_ACTIONS'] === 'true';
+const base = isCI ? '/TuringCanvas/' : '/';
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  base,
   plugins: [
     react(),
     tailwindcss(),
@@ -33,7 +40,7 @@ export default defineConfig({
           },
         ],
       },
-      // Web App Manifest
+      // Web App Manifest — scope and start_url follow the base path on GH Pages
       manifest: {
         name: 'TuringCanvas - Automata Editor',
         short_name: 'TuringCanvas',
@@ -43,8 +50,8 @@ export default defineConfig({
         background_color: '#0f172a',
         display: 'standalone',
         orientation: 'landscape',
-        scope: '/',
-        start_url: '/',
+        scope: base,
+        start_url: base,
         // Icons are defined here as placeholders; drop real .png files into /public/icons/
         icons: [
           {
