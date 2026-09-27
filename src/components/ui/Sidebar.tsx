@@ -1,4 +1,5 @@
 import { useState, type ReactElement } from 'react';
+import { useStore as useRFStore } from '@xyflow/react';
 import { useAutomataStore } from '../../store/useAutomataStore';
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -18,34 +19,46 @@ export function Sidebar(): ReactElement {
 // ── Edit panel ────────────────────────────────────────────────────────────────
 
 function EditPanel(): ReactElement {
+  const nodes     = useAutomataStore((s) => s.nodes);
+  const clearStore = useAutomataStore((s) => s.clearStore);
+
+  // React Flow tracks selection internally; tap its store to detect selections.
+  const hasSelectedNodes = useRFStore((s) => s.nodes.some((n) => n.selected));
+  const hasSelectedEdges = useRFStore((s) => s.edges.some((e) => e.selected));
+  const hasSelection = hasSelectedNodes || hasSelectedEdges;
+
+  const isEmpty = nodes.length === 0;
+
   return (
     <div className="flex flex-col gap-2 p-3">
       <SectionLabel>Graph</SectionLabel>
 
-      <SidebarButton id="sidebar-add-state-btn" icon={<CircleIcon />} aria-label="Add State" disabled>
+      {/* Add State — always enabled in edit mode */}
+      <SidebarButton id="sidebar-add-state-btn" icon={<CircleIcon />} aria-label="Add State">
         Add State
       </SidebarButton>
-      <SidebarButton id="sidebar-add-transition-btn" icon={<ArrowIcon />} aria-label="Add Transition" disabled>
+      {/* Add Transition — always enabled in edit mode */}
+      <SidebarButton id="sidebar-add-transition-btn" icon={<ArrowIcon />} aria-label="Add Transition">
         Add Transition
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
 
       <SectionLabel>Selection</SectionLabel>
-      <SidebarButton id="sidebar-mark-initial-btn" icon={<StarIcon />} aria-label="Mark selected state as initial" disabled>
+      <SidebarButton id="sidebar-mark-initial-btn" icon={<StarIcon />} aria-label="Mark selected state as initial" disabled={!hasSelectedNodes}>
         Mark Initial
       </SidebarButton>
-      <SidebarButton id="sidebar-mark-accepting-btn" icon={<CheckCircleIcon />} aria-label="Mark selected state as accepting" disabled>
+      <SidebarButton id="sidebar-mark-accepting-btn" icon={<CheckCircleIcon />} aria-label="Mark selected state as accepting" disabled={!hasSelectedNodes}>
         Mark Accepting
       </SidebarButton>
-      <SidebarButton id="sidebar-delete-selected-btn" icon={<TrashIcon />} aria-label="Delete selected elements" disabled danger>
+      <SidebarButton id="sidebar-delete-selected-btn" icon={<TrashIcon />} aria-label="Delete selected elements" disabled={!hasSelection} danger>
         Delete Selected
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
 
       <SectionLabel>Canvas</SectionLabel>
-      <SidebarButton id="sidebar-clear-btn" icon={<TrashIcon />} aria-label="Clear all states and transitions" disabled danger>
+      <SidebarButton id="sidebar-clear-btn" icon={<TrashIcon />} aria-label="Clear all states and transitions" onClick={clearStore} disabled={isEmpty} danger>
         Clear All
       </SidebarButton>
     </div>
