@@ -19,7 +19,8 @@ export function Sidebar(): ReactElement {
 // ── Edit panel ────────────────────────────────────────────────────────────────
 
 function EditPanel(): ReactElement {
-  const nodes     = useAutomataStore((s) => s.nodes);
+  const nodes      = useAutomataStore((s) => s.nodes);
+  const addNode    = useAutomataStore((s) => s.addNode);
   const clearStore = useAutomataStore((s) => s.clearStore);
 
   // React Flow tracks selection internally; tap its store to detect selections.
@@ -29,12 +30,27 @@ function EditPanel(): ReactElement {
 
   const isEmpty = nodes.length === 0;
 
+  function handleAddState(): void {
+    const count = nodes.length;
+    // Stagger nodes in a row so each new one is visible immediately.
+    // Offset wraps every 5 nodes to start a second row.
+    const col = count % 5;
+    const row = Math.floor(count / 5);
+    addNode({
+      id: crypto.randomUUID(),
+      label: `q${String(count)}`,
+      isInitial: count === 0,   // first node auto-marked initial
+      isAccepting: false,
+      position: { x: 80 + col * 160, y: 120 + row * 160 },
+    });
+  }
+
   return (
     <div className="flex flex-col gap-2 p-3">
       <SectionLabel>Graph</SectionLabel>
 
       {/* Add State — always enabled in edit mode */}
-      <SidebarButton id="sidebar-add-state-btn" icon={<CircleIcon />} aria-label="Add State">
+      <SidebarButton id="sidebar-add-state-btn" icon={<CircleIcon />} aria-label="Add State" onClick={handleAddState}>
         Add State
       </SidebarButton>
       {/* Add Transition — always enabled in edit mode */}
