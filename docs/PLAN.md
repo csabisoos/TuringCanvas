@@ -50,7 +50,7 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 
 ## Phase 6: PWA & Polish
 
-* [ ] Install `vite-plugin-pwa` and configure service workers for 100% offline use.
-* [ ] Add web manifest (icons, name, theme colors).
+* [x] Install `vite-plugin-pwa` and configure service workers for 100% offline use. — *Completed 2026-09-27*
+* [x] Add web manifest (icons, name, theme colors). — *Completed 2026-09-27*
 * [ ] Final bug fixes, accessibility (a11y) improvements, and UI polish.
 * [ ] Deploy to GitHub Pages or Vercel.

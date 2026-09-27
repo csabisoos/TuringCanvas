@@ -2,10 +2,35 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <!-- Viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta -->
     <title>TuringCanvas - Finite Automata Visualizer</title>
-    <meta name="description" content="A modern, offline-capable PWA alternative to JFLAP for visualizing and simulating formal languages and finite automata." />
+    <meta
+      name="description"
+      content="A modern, offline-capable PWA alternative to JFLAP for visualizing and simulating formal languages and finite automata."
+    />
+
+    <!-- PWA Theme Color (matches Tailwind slate-900 / dark background) -->
+    <meta name="theme-color" content="#0f172a" />
+
+    <!-- PWA Manifest (injected by vite-plugin-pwa, but kept explicit for clarity) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Apple PWA (iOS home screen) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TuringCanvas" />
+    <!-- Placeholder: replace with actual icon once /public/icons/apple-touch-icon.png is available -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileColor" content="#0f172a" />
   </head>
   <body>
     <div id="root"></div>
