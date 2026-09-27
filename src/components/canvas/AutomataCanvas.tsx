@@ -5,6 +5,7 @@ import {
   BackgroundVariant,
   Controls,
   MiniMap,
+  Panel,
 } from '@xyflow/react';
 import type { Node, NodeProps, Edge, NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -123,6 +124,19 @@ export function AutomataCanvas(): ReactElement {
           maskColor="rgba(17,24,39,0.7)"
           style={{ background: '#111827' }} // gray-900
         />
+        {storeNodes.length === 0 && (
+          <Panel position="top-center" className="mt-20 pointer-events-none">
+            <div className="flex flex-col items-center gap-2 text-center select-none">
+              <div className="w-16 h-16 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5">
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+              </div>
+              <p className="text-sm text-gray-500 font-medium">No states yet</p>
+              <p className="text-xs text-gray-600">Click <strong className="text-gray-400">Add State</strong> in the sidebar to begin</p>
+            </div>
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );
