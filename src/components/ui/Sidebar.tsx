@@ -41,6 +41,13 @@ function EditPanel(): ReactElement {
 
   const isEmpty = nodes.length === 0;
 
+  const [showHint, setShowHint] = useState(false);
+
+  function handleAddTransitionClick() {
+    setShowHint(true);
+    setTimeout(() => setShowHint(false), 4000);
+  }
+
   function handleAddState(): void {
     const count = nodes.length;
     // Stagger nodes in a row so each new one is visible immediately.
@@ -65,9 +72,14 @@ function EditPanel(): ReactElement {
         Add State
       </SidebarButton>
       {/* Add Transition — always enabled in edit mode */}
-      <SidebarButton id="sidebar-add-transition-btn" icon={<ArrowIcon />} aria-label="Add Transition">
+      <SidebarButton id="sidebar-add-transition-btn" icon={<ArrowIcon />} aria-label="Add Transition" onClick={handleAddTransitionClick}>
         Add Transition
       </SidebarButton>
+      {showHint && (
+        <p className="text-[10px] text-indigo-400 px-1 leading-relaxed">
+          Drag from the <strong>▶</strong> handle on any state to another state.
+        </p>
+      )}
 
       <div className="my-1 border-t border-gray-800" />
 
