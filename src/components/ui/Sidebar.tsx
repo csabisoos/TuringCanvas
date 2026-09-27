@@ -22,11 +22,22 @@ function EditPanel(): ReactElement {
   const nodes      = useAutomataStore((s) => s.nodes);
   const addNode    = useAutomataStore((s) => s.addNode);
   const clearStore = useAutomataStore((s) => s.clearStore);
+  const markInitial   = useAutomataStore((s) => s.markInitial);
+  const markAccepting = useAutomataStore((s) => s.markAccepting);
+  const deleteSelected = useAutomataStore((s) => s.deleteSelected);
 
   // React Flow tracks selection internally; tap its store to detect selections.
   const hasSelectedNodes = useRFStore((s) => s.nodes.some((n) => n.selected));
   const hasSelectedEdges = useRFStore((s) => s.edges.some((e) => e.selected));
   const hasSelection = hasSelectedNodes || hasSelectedEdges;
+
+  const selectedNodeIds = useRFStore((s) =>
+    s.nodes.filter((n) => n.selected).map((n) => n.id),
+  );
+  const selectedEdgeIds = useRFStore((s) =>
+    s.edges.filter((e) => e.selected).map((e) => e.id),
+  );
+  const singleSelectedNodeId = selectedNodeIds.length === 1 ? selectedNodeIds[0] : null;
 
   const isEmpty = nodes.length === 0;
 
@@ -61,13 +72,13 @@ function EditPanel(): ReactElement {
       <div className="my-1 border-t border-gray-800" />
 
       <SectionLabel>Selection</SectionLabel>
-      <SidebarButton id="sidebar-mark-initial-btn" icon={<StarIcon />} aria-label="Mark selected state as initial" disabled={!hasSelectedNodes}>
+      <SidebarButton id="sidebar-mark-initial-btn" icon={<StarIcon />} aria-label="Mark selected state as initial" onClick={() => { if (singleSelectedNodeId) markInitial(singleSelectedNodeId); }} disabled={!singleSelectedNodeId}>
         Mark Initial
       </SidebarButton>
-      <SidebarButton id="sidebar-mark-accepting-btn" icon={<CheckCircleIcon />} aria-label="Mark selected state as accepting" disabled={!hasSelectedNodes}>
+      <SidebarButton id="sidebar-mark-accepting-btn" icon={<CheckCircleIcon />} aria-label="Mark selected state as accepting" onClick={() => { if (singleSelectedNodeId) markAccepting(singleSelectedNodeId); }} disabled={!singleSelectedNodeId}>
         Mark Accepting
       </SidebarButton>
-      <SidebarButton id="sidebar-delete-selected-btn" icon={<TrashIcon />} aria-label="Delete selected elements" disabled={!hasSelection} danger>
+      <SidebarButton id="sidebar-delete-selected-btn" icon={<TrashIcon />} aria-label="Delete selected elements" onClick={() => deleteSelected(selectedNodeIds, selectedEdgeIds)} disabled={!hasSelection} danger>
         Delete Selected
       </SidebarButton>
 

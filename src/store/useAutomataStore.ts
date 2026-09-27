@@ -40,6 +40,12 @@ interface AutomataState {
 interface AutomataActions {
   addNode: (node: AutomataNode) => void;
   addEdge: (edge: AutomataEdge) => void;
+  /** Sets the node with `id` as the only initial state (clears others). */
+  markInitial: (id: string) => void;
+  /** Toggles the accepting status of the node with `id`. */
+  markAccepting: (id: string) => void;
+  /** Removes all currently selected nodes and edges from the store. */
+  deleteSelected: (nodeIds: string[], edgeIds: string[]) => void;
   clearStore: () => void;
   /** Switches the editor between 'edit' and 'simulate' modes. */
   setEditorMode: (mode: EditorMode) => void;
@@ -143,6 +149,29 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
 
   addEdge: (edge): void => {
     set((state) => ({ edges: [...state.edges, edge] }));
+  },
+
+  markInitial: (id): void => {
+    set((state) => ({
+      nodes: state.nodes.map((n) => ({ ...n, isInitial: n.id === id })),
+    }));
+  },
+
+  markAccepting: (id): void => {
+    set((state) => ({
+      nodes: state.nodes.map((n) =>
+        n.id === id ? { ...n, isAccepting: !n.isAccepting } : n,
+      ),
+    }));
+  },
+
+  deleteSelected: (nodeIds, edgeIds): void => {
+    const nodeSet = new Set(nodeIds);
+    const edgeSet = new Set(edgeIds);
+    set((state) => ({
+      nodes: state.nodes.filter((n) => !nodeSet.has(n.id)),
+      edges: state.edges.filter((e) => !edgeSet.has(e.id)),
+    }));
   },
 
   clearStore: (): void => { set(INITIAL_STATE); },
