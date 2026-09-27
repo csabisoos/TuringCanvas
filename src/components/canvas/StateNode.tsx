@@ -9,13 +9,14 @@ export interface StateNodeData {
   label: string;
   isInitial: boolean;
   isAccepting: boolean;
+  isActive: boolean;
   [key: string]: unknown; // satisfies React Flow's Record<string, unknown> constraint
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function StateNode({ id, data }: NodeProps<Node<StateNodeData>>): ReactElement {
-  const { label, isInitial, isAccepting } = data;
+  const { label, isInitial, isAccepting, isActive } = data;
 
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(label);
@@ -26,9 +27,6 @@ export function StateNode({ id, data }: NodeProps<Node<StateNodeData>>): ReactEl
     if (trimmed) updateNodeLabel(id, trimmed);
     setIsEditing(false);
   }
-
-  // Derive active status directly from the store — no prop drilling needed.
-  const isActive = useAutomataStore((s) => s.activeNodeIds.has(id));
 
   // Build a descriptive label for screen readers
   const stateType = isInitial && isAccepting

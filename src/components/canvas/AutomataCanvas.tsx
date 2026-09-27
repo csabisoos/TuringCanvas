@@ -33,13 +33,16 @@ const edgeTypes = {
  * Maps an `AutomataNode` from the Zustand store to a React Flow `Node`.
  * The `type` field routes React Flow to the `StateNode` renderer.
  */
-function toFlowNode(node: {
-  id: string;
-  position: { x: number; y: number };
-  label: string;
-  isInitial: boolean;
-  isAccepting: boolean;
-}): Node<StateNodeData> {
+function toFlowNode(
+  node: {
+    id: string;
+    position: { x: number; y: number };
+    label: string;
+    isInitial: boolean;
+    isAccepting: boolean;
+  },
+  activeNodeIds: Set<string>,
+): Node<StateNodeData> {
   return {
     id: node.id,
     type: 'stateNode',
@@ -48,6 +51,7 @@ function toFlowNode(node: {
       label: node.label,
       isInitial: node.isInitial,
       isAccepting: node.isAccepting,
+      isActive: activeNodeIds.has(node.id),
     },
   };
 }
@@ -79,6 +83,7 @@ function toFlowEdge(edge: {
 export function AutomataCanvas(): ReactElement {
   const storeNodes = useAutomataStore((s) => s.nodes);
   const storeEdges = useAutomataStore((s) => s.edges);
+  const activeNodeIds = useAutomataStore((s) => s.activeNodeIds);
   const onNodesChange = useAutomataStore((s) => s.onNodesChange);
   const onEdgesChange = useAutomataStore((s) => s.onEdgesChange);
   const onConnect = useAutomataStore((s) => s.onConnect);
@@ -86,7 +91,7 @@ export function AutomataCanvas(): ReactElement {
 
   const isSimulating = editorMode === 'simulate';
 
-  const flowNodes = storeNodes.map(toFlowNode);
+  const flowNodes = storeNodes.map((n) => toFlowNode(n, activeNodeIds));
   const flowEdges = storeEdges.map(toFlowEdge);
 
   return (
