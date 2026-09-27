@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { Node, NodeProps } from '@xyflow/react';
 import { useAutomataStore } from '../../store/useAutomataStore';
@@ -16,6 +16,16 @@ export interface StateNodeData {
 
 export function StateNode({ id, data }: NodeProps<Node<StateNodeData>>): ReactElement {
   const { label, isInitial, isAccepting } = data;
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(label);
+  const updateNodeLabel = useAutomataStore((s) => s.updateNodeLabel);
+
+  function commit() {
+    const trimmed = draft.trim();
+    if (trimmed) updateNodeLabel(id, trimmed);
+    setIsEditing(false);
+  }
 
   // Derive active status directly from the store — no prop drilling needed.
   const isActive = useAutomataStore((s) => s.activeNodeIds.has(id));
@@ -80,9 +90,21 @@ export function StateNode({ id, data }: NodeProps<Node<StateNodeData>>): ReactEl
         )}
 
         {/* State label */}
-        <span className="relative z-10 text-xs font-semibold text-gray-100 select-none text-center leading-tight px-1 break-all max-w-[3rem]">
-          {label}
-        </span>
+        {isEditing ? (
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setIsEditing(false); }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="w-10 text-center text-xs bg-transparent border-b border-indigo-400 text-gray-100 outline-none"
+          />
+        ) : (
+          <span onDoubleClick={() => { setDraft(label); setIsEditing(true); }} className="relative z-10 text-xs font-semibold text-gray-100 select-none text-center leading-tight px-1 break-all max-w-[3rem]">
+            {label}
+          </span>
+        )}
       </div>
 
       {/* React Flow connection handles — hidden visually but functional */}
