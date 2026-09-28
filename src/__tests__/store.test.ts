@@ -236,4 +236,94 @@ describe('useAutomataStore', () => {
       ).toThrow();
     });
   });
+
+  // ─── setSelectedElements ──────────────────────────────────────────────────
+
+  describe('setSelectedElements', () => {
+    it('should initialise with empty selection', () => {
+      expect(getState().selectedNodeIds).toEqual([]);
+      expect(getState().selectedEdgeIds).toEqual([]);
+    });
+
+    it('should store the given node and edge id arrays', () => {
+      getState().setSelectedElements(['q0', 'q1'], ['e0']);
+
+      expect(getState().selectedNodeIds).toEqual(['q0', 'q1']);
+      expect(getState().selectedEdgeIds).toEqual(['e0']);
+    });
+
+    it('should replace the previous selection on subsequent calls', () => {
+      getState().setSelectedElements(['q0'], []);
+      getState().setSelectedElements(['q1'], ['e1']);
+
+      expect(getState().selectedNodeIds).toEqual(['q1']);
+      expect(getState().selectedEdgeIds).toEqual(['e1']);
+    });
+
+    it('should accept empty arrays to clear the selection', () => {
+      getState().setSelectedElements(['q0'], ['e0']);
+      getState().setSelectedElements([], []);
+
+      expect(getState().selectedNodeIds).toEqual([]);
+      expect(getState().selectedEdgeIds).toEqual([]);
+    });
+
+    it('should be reset to empty by clearStore', () => {
+      getState().setSelectedElements(['q0'], ['e0']);
+      getState().clearStore();
+
+      expect(getState().selectedNodeIds).toEqual([]);
+      expect(getState().selectedEdgeIds).toEqual([]);
+    });
+  });
+
+  // ─── deleteSelected (store-driven) ────────────────────────────────────────
+
+  describe('deleteSelected (store-driven)', () => {
+    beforeEach(() => {
+      getState().addNode({ id: 'q0', position: { x: 0, y: 0 }, label: 'q0', isInitial: true, isAccepting: false });
+      getState().addNode({ id: 'q1', position: { x: 200, y: 0 }, label: 'q1', isInitial: false, isAccepting: true });
+      getState().addEdge({ id: 'e0', source: 'q0', target: 'q1', symbols: ['a'] });
+    });
+
+    it('should remove the node identified by selectedNodeIds', () => {
+      getState().setSelectedElements(['q0'], []);
+      getState().deleteSelected(getState().selectedNodeIds, getState().selectedEdgeIds);
+
+      const { nodes } = getState();
+      expect(nodes).toHaveLength(1);
+      expect(nodes[0].id).toBe('q1');
+    });
+
+    it('should remove the edge identified by selectedEdgeIds', () => {
+      getState().setSelectedElements([], ['e0']);
+      getState().deleteSelected(getState().selectedNodeIds, getState().selectedEdgeIds);
+
+      expect(getState().edges).toHaveLength(0);
+    });
+
+    it('should remove both nodes and edges when both are selected', () => {
+      getState().setSelectedElements(['q1'], ['e0']);
+      getState().deleteSelected(getState().selectedNodeIds, getState().selectedEdgeIds);
+
+      expect(getState().nodes).toHaveLength(1);
+      expect(getState().edges).toHaveLength(0);
+    });
+
+    it('should be a no-op when selection is empty', () => {
+      getState().setSelectedElements([], []);
+      getState().deleteSelected(getState().selectedNodeIds, getState().selectedEdgeIds);
+
+      expect(getState().nodes).toHaveLength(2);
+      expect(getState().edges).toHaveLength(1);
+    });
+
+    it('should clear selectedNodeIds and selectedEdgeIds after deletion', () => {
+      getState().setSelectedElements(['q0'], ['e0']);
+      getState().deleteSelected(getState().selectedNodeIds, getState().selectedEdgeIds);
+
+      expect(getState().selectedNodeIds).toEqual([]);
+      expect(getState().selectedEdgeIds).toEqual([]);
+    });
+  });
 });

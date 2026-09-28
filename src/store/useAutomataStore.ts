@@ -20,6 +20,12 @@ interface AutomataState {
   edges: AutomataEdge[];
   editorMode: EditorMode;
 
+  // ── Selection state ───────────────────────────────────────────────────────
+  /** IDs of nodes currently selected on the canvas. Kept in sync via useOnSelectionChange. */
+  selectedNodeIds: string[];
+  /** IDs of edges currently selected on the canvas. Kept in sync via useOnSelectionChange. */
+  selectedEdgeIds: string[];
+
   // ── Simulation state ──────────────────────────────────────────────────────
   /** The set of node ids currently highlighted as "active" in the simulation. */
   activeNodeIds: Set<string>;
@@ -46,7 +52,12 @@ interface AutomataActions {
   markInitial: (id: string) => void;
   /** Toggles the accepting status of the node with `id`. */
   markAccepting: (id: string) => void;
-  /** Removes all currently selected nodes and edges from the store. */
+  /**
+   * Syncs canvas selection state into the store.
+   * Called by the `useOnSelectionChange` hook in AutomataCanvas.
+   */
+  setSelectedElements: (nodeIds: string[], edgeIds: string[]) => void;
+  /** Removes all currently selected nodes and edges from the store, then clears selection. */
   deleteSelected: (nodeIds: string[], edgeIds: string[]) => void;
   clearStore: () => void;
   /** Switches the editor between 'edit' and 'simulate' modes. */
@@ -113,6 +124,8 @@ const INITIAL_STATE: AutomataState = {
   nodes: [],
   edges: [],
   editorMode: 'edit',
+  selectedNodeIds: [],
+  selectedEdgeIds: [],
   ...SIMULATION_RESET,
 };
 
@@ -181,12 +194,18 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
     }));
   },
 
+  setSelectedElements: (nodeIds, edgeIds): void => {
+    set({ selectedNodeIds: nodeIds, selectedEdgeIds: edgeIds });
+  },
+
   deleteSelected: (nodeIds, edgeIds): void => {
     const nodeSet = new Set(nodeIds);
     const edgeSet = new Set(edgeIds);
     set((state) => ({
       nodes: state.nodes.filter((n) => !nodeSet.has(n.id)),
       edges: state.edges.filter((e) => !edgeSet.has(e.id)),
+      selectedNodeIds: [],
+      selectedEdgeIds: [],
     }));
   },
 

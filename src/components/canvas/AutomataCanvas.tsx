@@ -1,4 +1,4 @@
-import type { ComponentType, ReactElement } from 'react';
+import { type ComponentType, type ReactElement, useCallback } from 'react';
 import {
   ReactFlow,
   Background,
@@ -6,6 +6,7 @@ import {
   Controls,
   MiniMap,
   Panel,
+  useOnSelectionChange,
 } from '@xyflow/react';
 import type { Node, NodeProps, Edge, NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -89,6 +90,21 @@ export function AutomataCanvas(): ReactElement {
   const onEdgesChange = useAutomataStore((s) => s.onEdgesChange);
   const onConnect = useAutomataStore((s) => s.onConnect);
   const editorMode = useAutomataStore((s) => s.editorMode);
+  const setSelectedElements = useAutomataStore((s) => s.setSelectedElements);
+
+  // Mirror React Flow's internal selection into the Zustand store so that
+  // sidebar actions (Delete, Mark Initial, etc.) always act on live selection.
+  useOnSelectionChange({
+    onChange: useCallback(
+      ({ nodes, edges }: { nodes: { id: string }[]; edges: { id: string }[] }) => {
+        setSelectedElements(
+          nodes.map((n) => n.id),
+          edges.map((e) => e.id),
+        );
+      },
+      [setSelectedElements],
+    ),
+  });
 
   const isSimulating = editorMode === 'simulate';
 

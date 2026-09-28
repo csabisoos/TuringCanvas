@@ -1,5 +1,4 @@
 import { useState, type ReactElement } from 'react';
-import { useStore as useRFStore } from '@xyflow/react';
 import { useAutomataStore } from '../../store/useAutomataStore';
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -26,17 +25,11 @@ function EditPanel(): ReactElement {
   const markAccepting = useAutomataStore((s) => s.markAccepting);
   const deleteSelected = useAutomataStore((s) => s.deleteSelected);
 
-  // React Flow tracks selection internally; tap its store to detect selections.
-  const hasSelectedNodes = useRFStore((s) => s.nodes.some((n) => n.selected));
-  const hasSelectedEdges = useRFStore((s) => s.edges.some((e) => e.selected));
-  const hasSelection = hasSelectedNodes || hasSelectedEdges;
+  // Selection is kept in sync with React Flow via useOnSelectionChange in AutomataCanvas.
+  const selectedNodeIds = useAutomataStore((s) => s.selectedNodeIds);
+  const selectedEdgeIds = useAutomataStore((s) => s.selectedEdgeIds);
 
-  const selectedNodeIds = useRFStore((s) =>
-    s.nodes.filter((n) => n.selected).map((n) => n.id),
-  );
-  const selectedEdgeIds = useRFStore((s) =>
-    s.edges.filter((e) => e.selected).map((e) => e.id),
-  );
+  const hasSelection = selectedNodeIds.length > 0 || selectedEdgeIds.length > 0;
   const singleSelectedNodeId = selectedNodeIds.length === 1 ? selectedNodeIds[0] : null;
 
   const isEmpty = nodes.length === 0;
