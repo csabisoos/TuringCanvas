@@ -41,7 +41,7 @@ export function StateNode({ id, data }: NodeProps<Node<StateNodeData>>): ReactEl
 
   return (
     <div
-      className="relative flex items-center justify-center"
+      className="relative z-10 flex items-center justify-center"
       role="img"
       aria-label={nodeAriaLabel}
     >
