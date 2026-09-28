@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from 'react';
+import { useState, useRef, type ReactElement } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -68,7 +68,6 @@ export function EditableEdge({
   targetPosition,
   style,
   markerEnd,
-  label,
 }: EdgeProps): ReactElement {
   const offset = useParallelEdgeOffset(id, source, target);
   const [edgePath, labelX, labelY] = offset !== 0
@@ -82,16 +81,42 @@ export function EditableEdge({
       targetPosition,
     });
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(label as string);
+  // Read symbols directly from the store by edge id — never derive from the
+  // `label` prop, which is a joined string that can lag behind local edits and
+  // cause stale-closure / prop-derived-state bugs.
+  const storeSymbols = useAutomataStore(
+    (s) => s.edges.find((e) => e.id === id)?.symbols ?? ['ε'],
+  );
   const updateEdgeSymbols = useAutomataStore((s) => s.updateEdgeSymbols);
 
+  const [isEditing, setIsEditing] = useState(false);
+  // draft holds the raw comma-separated text while the user is typing
+  const [draft, setDraft] = useState('');
+  // Guard to avoid double-commit when Enter triggers onBlur immediately after
+  const isCommittingRef = useRef(false);
+
+  /** Persist the draft to the store and exit edit mode. */
   function commit() {
+    if (isCommittingRef.current) return;
+    isCommittingRef.current = true;
+
     const symbols = draft.split(',').map((s) => s.trim()).filter(Boolean);
     const finalSymbols = symbols.length > 0 ? symbols : ['ε'];
     updateEdgeSymbols(id, finalSymbols);
     setIsEditing(false);
+
+    // Reset the guard after the current event loop tick so that onBlur
+    // (which fires immediately after onKeyDown for Enter) is suppressed.
+    setTimeout(() => { isCommittingRef.current = false; }, 0);
   }
+
+  /** Enter edit mode, seeding the draft from the current store symbols. */
+  function startEditing() {
+    setDraft(storeSymbols.join(', '));
+    setIsEditing(true);
+  }
+
+  const displayLabel = storeSymbols.join(', ');
 
   return (
     <>
@@ -101,6 +126,8 @@ export function EditableEdge({
           style={{
             position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+            // REQUIRED: without pointerEvents: 'all', clicks fall through to
+            // the canvas pan/zoom handler and never reach the label or input.
             pointerEvents: 'all',
           }}
           className="nodrag nopan"
@@ -110,23 +137,23 @@ export function EditableEdge({
               autoFocus
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              onBlur={commit}
+              onBlur={() => { commit(); }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') commit();
-                if (e.key === 'Escape') setIsEditing(false);
+                if (e.key === 'Enter') { e.preventDefault(); commit(); }
+                if (e.key === 'Escape') { setIsEditing(false); }
               }}
+              // Prevent canvas pan/zoom from receiving pointer events that
+              // would steal focus away from the input mid-edit.
               onMouseDown={(e) => e.stopPropagation()}
-              className="w-16 text-center text-xs bg-indigo-950 border border-indigo-400 text-indigo-100 outline-none rounded"
+              onTouchStart={(e) => e.stopPropagation()}
+              className="w-20 text-center text-xs bg-indigo-950 border border-indigo-400 text-indigo-100 outline-none rounded px-1 py-0.5 focus:ring-1 focus:ring-indigo-400"
             />
           ) : (
             <div
-              onClick={() => {
-                setDraft(label as string);
-                setIsEditing(true);
-              }}
-              className="cursor-pointer bg-indigo-950/85 text-indigo-100 text-xs px-2 py-0.5 rounded border border-transparent hover:border-indigo-400"
+              onClick={startEditing}
+              className="cursor-pointer bg-indigo-950/85 text-indigo-100 text-xs px-2 py-0.5 rounded border border-transparent hover:border-indigo-400 transition-colors"
             >
-              {label as string}
+              {displayLabel}
             </div>
           )}
         </div>
