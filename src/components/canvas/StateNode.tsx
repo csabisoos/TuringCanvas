@@ -105,16 +105,16 @@ export function StateNode({ id, data }: NodeProps<Node<StateNodeData>>): ReactEl
         )}
       </div>
 
-      {/* React Flow connection handles — hidden visually but functional */}
+      {/* React Flow connection handles — enlarged hit-target so drag-to-connect is reliable */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-2 !h-2 !bg-indigo-500 !border-indigo-300"
+        className="!w-3 !h-3 !bg-indigo-500 !border-2 !border-indigo-300 opacity-0 hover:opacity-100 transition-opacity duration-150"
       />
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-2 !h-2 !bg-indigo-500 !border-indigo-300"
+        className="!w-3 !h-3 !bg-indigo-500 !border-2 !border-indigo-300 opacity-0 hover:opacity-100 transition-opacity duration-150"
       />
     </div>
   );

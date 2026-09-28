@@ -239,6 +239,18 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
   },
 
   onNodesChange: (changes): void => {
+    // React Flow reports its own internal bookkeeping (measured pixel size,
+    // selection) as NodeChange events too. Our domain model doesn't track
+    // either, so forwarding them into the store would replace every node
+    // object on every render — which defeats React Flow's reference-equality
+    // check in `adoptUserNodes` and wipes its cached handle bounds, breaking
+    // drag-to-connect in a self-sustaining remeasure loop. Only apply changes
+    // that actually affect domain state (position/add/remove/replace).
+    const relevantChanges = changes.filter(
+      (c) => c.type !== 'dimensions' && c.type !== 'select',
+    );
+    if (relevantChanges.length === 0) return;
+
     set((state) => {
       // Build a minimal RF-compatible Node array so applyNodeChanges can work.
       // We only need `id`, `position`, and `data` — RF adds the rest internally.
@@ -253,7 +265,7 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
         type: 'stateNode',
       }));
 
-      const updated = applyNodeChanges(changes, rfNodes);
+      const updated = applyNodeChanges(relevantChanges, rfNodes);
 
       // Map back to AutomataNode, preserving domain fields.
       const next: AutomataNode[] = updated.map((n) => ({
@@ -290,6 +302,10 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
   },
 
   onConnect: (connection): void => {
+    // React Flow types source/target as `string | null`; bail out if either
+    // is absent so we never write a corrupt edge into the store.
+    if (!connection.source || !connection.target) return;
+
     const newEdge: AutomataEdge = {
       id: crypto.randomUUID(),
       source: connection.source,
