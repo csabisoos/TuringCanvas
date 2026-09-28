@@ -293,10 +293,23 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
   },
 
   onEdgesChange: (changes): void => {
+    // Mirror the onNodesChange strategy: React Flow emits 'select' change events
+    // whenever an edge is clicked/focused (to update its visual selected state).
+    // Our domain model does NOT track selection, so applying these changes would
+    // call set() on every edge click — triggering a Zustand notification →
+    // AutomataCanvas re-render → new flowEdges objects → EditableEdge re-render.
+    // That re-render disrupts the <input> focus mid-edit (causing the perceived
+    // "one keystroke then lose focus" bug). Only process changes that affect
+    // real domain state: remove and replace.
+    const relevantChanges = changes.filter(
+      (c) => c.type !== 'select',
+    );
+    if (relevantChanges.length === 0) return;
+
     set((state) => {
       // AutomataEdge is structurally compatible with RF's Edge minimum shape.
       const updated = applyEdgeChanges(
-        changes,
+        relevantChanges,
         state.edges as Parameters<typeof applyEdgeChanges>[1],
       );
       // Map back: preserve the domain `symbols` field.

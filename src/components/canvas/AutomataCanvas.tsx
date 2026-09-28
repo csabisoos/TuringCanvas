@@ -1,4 +1,4 @@
-import { type ComponentType, type ReactElement, useCallback } from 'react';
+import { type ComponentType, type ReactElement, useCallback, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -120,8 +120,14 @@ export function AutomataCanvas(): ReactElement {
   // tool is armed — otherwise it would fire accidentally while repositioning states.
   const isConnectToolActive = editorMode === 'edit' && editorTool === 'connect';
 
-  const flowNodes = storeNodes.map((n) => toFlowNode(n, activeNodeIds));
-  const flowEdges = storeEdges.map(toFlowEdge);
+  const flowNodes = useMemo(
+    () => storeNodes.map((n) => toFlowNode(n, activeNodeIds)),
+    [storeNodes, activeNodeIds],
+  );
+  const flowEdges = useMemo(
+    () => storeEdges.map(toFlowEdge),
+    [storeEdges],
+  );
 
   return (
     <div className="w-full h-full">
