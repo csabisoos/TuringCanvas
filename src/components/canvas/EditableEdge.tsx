@@ -1,4 +1,4 @@
-import { useState, useRef, type ReactElement } from 'react';
+import { useState, useRef, useEffect, useCallback, type ReactElement } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -56,6 +56,81 @@ function useParallelEdgeOffset(id: string, source: string, target: string): numb
   return (index - (count - 1) / 2) * PARALLEL_EDGE_OFFSET;
 }
 
+// ── Isolated input component ─────────────────────────────────────────────────
+// Rendered as a completely separate component so its local state (draft text)
+// is never affected by re-renders of the parent EdgeWrapper. The input manages
+// its own value and only calls onCommit / onCancel when editing is done.
+
+interface EdgeInputProps {
+  initialValue: string;
+  onCommit: (value: string) => void;
+  onCancel: () => void;
+}
+
+function EdgeInput({ initialValue, onCommit, onCancel }: EdgeInputProps): ReactElement {
+  const [draft, setDraft] = useState(initialValue);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Track whether commit has been called so onBlur doesn't double-fire.
+  const committedRef = useRef(false);
+
+  // Focus the input imperatively after mount — more reliable than autoFocus
+  // in React 19 concurrent mode where effects run after layout is painted.
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    // requestAnimationFrame gives React a chance to flush the DOM update
+    // before we try to focus, preventing focus races with RF's own handlers.
+    const raf = requestAnimationFrame(() => {
+      el.focus();
+      el.select();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const handleCommit = useCallback(() => {
+    if (committedRef.current) return;
+    committedRef.current = true;
+    onCommit(draft);
+  }, [draft, onCommit]);
+
+  const handleBlur = useCallback(() => {
+    // Defer slightly so that a click on the canvas doesn't race with commit
+    // when the user clicks away — the blur always fires before the pane click.
+    handleCommit();
+  }, [handleCommit]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      handleCommit();
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      committedRef.current = true; // suppress blur→commit
+      onCancel();
+    }
+  }, [handleCommit, onCancel]);
+
+  return (
+    <input
+      ref={inputRef}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+      className="w-20 text-center text-xs bg-indigo-950 border border-indigo-400 text-indigo-100 outline-none rounded px-1 py-0.5 focus:ring-1 focus:ring-indigo-400"
+    />
+  );
+}
+
+// ── Main edge component ───────────────────────────────────────────────────────
+
 export function EditableEdge({
   id,
   source,
@@ -81,40 +156,29 @@ export function EditableEdge({
       targetPosition,
     });
 
-  // Read symbols directly from the store by edge id — never derive from the
-  // `label` prop, which is a joined string that can lag behind local edits and
-  // cause stale-closure / prop-derived-state bugs.
+  // Read symbols directly from the store by edge id.
   const storeSymbols = useAutomataStore(
     (s) => s.edges.find((e) => e.id === id)?.symbols ?? ['ε'],
   );
   const updateEdgeSymbols = useAutomataStore((s) => s.updateEdgeSymbols);
 
   const [isEditing, setIsEditing] = useState(false);
-  // draft holds the raw comma-separated text while the user is typing
-  const [draft, setDraft] = useState('');
-  // Guard to avoid double-commit when Enter triggers onBlur immediately after
-  const isCommittingRef = useRef(false);
 
-  /** Persist the draft to the store and exit edit mode. */
-  function commit() {
-    if (isCommittingRef.current) return;
-    isCommittingRef.current = true;
-
-    const symbols = draft.split(',').map((s) => s.trim()).filter(Boolean);
+  const handleCommit = useCallback((rawValue: string) => {
+    const symbols = rawValue.split(',').map((s) => s.trim()).filter(Boolean);
     const finalSymbols = symbols.length > 0 ? symbols : ['ε'];
     updateEdgeSymbols(id, finalSymbols);
     setIsEditing(false);
+  }, [id, updateEdgeSymbols]);
 
-    // Reset the guard after the current event loop tick so that onBlur
-    // (which fires immediately after onKeyDown for Enter) is suppressed.
-    setTimeout(() => { isCommittingRef.current = false; }, 0);
-  }
+  const handleCancel = useCallback(() => {
+    setIsEditing(false);
+  }, []);
 
-  /** Enter edit mode, seeding the draft from the current store symbols. */
-  function startEditing() {
-    setDraft(storeSymbols.join(', '));
+  const handleLabelClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsEditing(true);
-  }
+  }, []);
 
   const displayLabel = storeSymbols.join(', ');
 
@@ -131,27 +195,22 @@ export function EditableEdge({
             pointerEvents: 'all',
           }}
           className="nodrag nopan"
+          // Stop ALL pointer events from bubbling out of this wrapper so that
+          // React Flow's pane handlers (selection box, pan) never interfere.
+          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
         >
           {isEditing ? (
-            <input
-              autoFocus
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onBlur={() => { commit(); }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') { e.preventDefault(); commit(); }
-                if (e.key === 'Escape') { setIsEditing(false); }
-              }}
-              // Prevent canvas pan/zoom from receiving pointer events that
-              // would steal focus away from the input mid-edit.
-              onMouseDown={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              className="w-20 text-center text-xs bg-indigo-950 border border-indigo-400 text-indigo-100 outline-none rounded px-1 py-0.5 focus:ring-1 focus:ring-indigo-400"
+            <EdgeInput
+              initialValue={displayLabel}
+              onCommit={handleCommit}
+              onCancel={handleCancel}
             />
           ) : (
             <div
-              onClick={startEditing}
-              className="cursor-pointer bg-indigo-950/85 text-indigo-100 text-xs px-2 py-0.5 rounded border border-transparent hover:border-indigo-400 transition-colors"
+              onClick={handleLabelClick}
+              className="cursor-pointer bg-indigo-950/85 text-indigo-100 text-xs px-2 py-0.5 rounded border border-transparent hover:border-indigo-400 transition-colors select-none"
             >
               {displayLabel}
             </div>
