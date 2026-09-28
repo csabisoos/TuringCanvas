@@ -25,6 +25,8 @@ function EditPanel(): ReactElement {
   const markAccepting = useAutomataStore((s) => s.markAccepting);
   const deleteSelected = useAutomataStore((s) => s.deleteSelected);
   const addTransition  = useAutomataStore((s) => s.addTransition);
+  const editorTool    = useAutomataStore((s) => s.editorTool);
+  const setEditorTool = useAutomataStore((s) => s.setEditorTool);
 
   // Selection is kept in sync with React Flow via useOnSelectionChange in AutomataCanvas.
   const selectedNodeIds = useAutomataStore((s) => s.selectedNodeIds);
@@ -34,20 +36,20 @@ function EditPanel(): ReactElement {
   const singleSelectedNodeId = selectedNodeIds.length === 1 ? selectedNodeIds[0] : null;
   /** True only when exactly 2 nodes are selected — enables the sidebar shortcut. */
   const canAddTransition  = selectedNodeIds.length === 2;
+  const isConnectToolActive = editorTool === 'connect';
 
   const isEmpty = nodes.length === 0;
-
-  const [showHint, setShowHint] = useState(false);
 
   function handleAddTransition(): void {
     if (canAddTransition) {
       // Fast path: two nodes already selected — create a ε transition between them.
       addTransition(selectedNodeIds[0]!, selectedNodeIds[1]!);
-    } else {
-      // Fallback hint: guide the user to drag-connect handles.
-      setShowHint(true);
-      setTimeout(() => setShowHint(false), 4000);
+      return;
     }
+    // Otherwise, toggle the canvas's drag-to-connect tool. Connections can only
+    // ever be drawn while this tool is armed — never as a side effect of
+    // dragging a state around in the default 'select' tool.
+    setEditorTool(isConnectToolActive ? 'select' : 'connect');
   }
 
   function handleAddState(): void {
@@ -74,26 +76,31 @@ function EditPanel(): ReactElement {
         Add State
       </SidebarButton>
 
-      {/* Add Transition — enabled immediately when exactly 2 nodes are selected;
-          falls back to a drag-handle hint when fewer/more nodes are selected. */}
+      {/* Add Transition — instantly connects 2 selected nodes; otherwise toggles
+          the "connect" tool, which is the only mode where dragging a handle
+          on the canvas draws a new transition. */}
       <SidebarButton
         id="sidebar-add-transition-btn"
         icon={<ArrowIcon />}
         aria-label="Add Transition"
         onClick={handleAddTransition}
-        active={canAddTransition}
+        active={canAddTransition || isConnectToolActive}
       >
         Add Transition
       </SidebarButton>
-      {showHint && (
-        <p className="text-[10px] text-indigo-400 px-1 leading-relaxed">
-          Select <strong>exactly 2 states</strong> to connect them, or drag
-          from the <strong>▶</strong> handle on any state.
-        </p>
-      )}
-      {canAddTransition && (
+      {canAddTransition ? (
         <p className="text-[10px] text-emerald-400 px-1 leading-relaxed">
           Click <strong>Add Transition</strong> to connect the 2 selected states.
+        </p>
+      ) : isConnectToolActive ? (
+        <p className="text-[10px] text-emerald-400 px-1 leading-relaxed">
+          Connect mode active — drag from a state's handle to another state.
+          Click again to exit.
+        </p>
+      ) : (
+        <p className="text-[10px] text-gray-500 px-1 leading-relaxed">
+          Select <strong>exactly 2 states</strong>, or click{' '}
+          <strong>Add Transition</strong> to drag-connect on the canvas.
         </p>
       )}
 

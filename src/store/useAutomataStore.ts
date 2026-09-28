@@ -14,11 +14,19 @@ interface SerializedGraph {
 // ── Store types ───────────────────────────────────────────────────────────────
 
 type EditorMode = 'edit' | 'simulate';
+/**
+ * 'select' — default canvas interaction (drag to move/select nodes, no new edges).
+ * 'connect' — armed by the Sidebar "Add Transition" toggle; dragging from a
+ * handle draws a new transition. Required so automata edges are only ever
+ * created intentionally, never as a side effect of repositioning a state.
+ */
+type EditorTool = 'select' | 'connect';
 
 interface AutomataState {
   nodes: AutomataNode[];
   edges: AutomataEdge[];
   editorMode: EditorMode;
+  editorTool: EditorTool;
 
   // ── Selection state ───────────────────────────────────────────────────────
   /** IDs of nodes currently selected on the canvas. Kept in sync via useOnSelectionChange. */
@@ -67,6 +75,8 @@ interface AutomataActions {
   clearStore: () => void;
   /** Switches the editor between 'edit' and 'simulate' modes. */
   setEditorMode: (mode: EditorMode) => void;
+  /** Switches the canvas interaction tool between 'select' and 'connect'. */
+  setEditorTool: (tool: EditorTool) => void;
   /** Returns a JSON string of the current nodes and edges. */
   serialize: () => string;
   /**
@@ -129,6 +139,7 @@ const INITIAL_STATE: AutomataState = {
   nodes: [],
   edges: [],
   editorMode: 'edit',
+  editorTool: 'select',
   selectedNodeIds: [],
   selectedEdgeIds: [],
   ...SIMULATION_RESET,
@@ -226,6 +237,8 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
   clearStore: (): void => { set(INITIAL_STATE); },
 
   setEditorMode: (mode): void => { set({ editorMode: mode }); },
+
+  setEditorTool: (tool): void => { set({ editorTool: tool }); },
 
   serialize: (): string => {
     const { nodes, edges } = get();

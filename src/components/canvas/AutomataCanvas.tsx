@@ -5,6 +5,7 @@ import {
   BackgroundVariant,
   Controls,
   MiniMap,
+  MarkerType,
   Panel,
   useOnSelectionChange,
 } from '@xyflow/react';
@@ -82,6 +83,8 @@ function toFlowEdge(edge: {
     style: { stroke: '#818cf8', strokeWidth: 2 }, // indigo-400
     labelStyle: { fill: '#e0e7ff', fontSize: 12 }, // indigo-100
     labelBgStyle: { fill: '#1e1b4b', fillOpacity: 0.85 }, // indigo-950
+    // Automata transitions are directed — always render an arrowhead at the target.
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#818cf8' },
   };
 }
 
@@ -95,6 +98,7 @@ export function AutomataCanvas(): ReactElement {
   const onEdgesChange = useAutomataStore((s) => s.onEdgesChange);
   const onConnect = useAutomataStore((s) => s.onConnect);
   const editorMode = useAutomataStore((s) => s.editorMode);
+  const editorTool = useAutomataStore((s) => s.editorTool);
   const setSelectedElements = useAutomataStore((s) => s.setSelectedElements);
 
   // Mirror React Flow's internal selection into the Zustand store so that
@@ -112,6 +116,9 @@ export function AutomataCanvas(): ReactElement {
   });
 
   const isSimulating = editorMode === 'simulate';
+  // Dragging from a handle only starts a new transition while the "Add Transition"
+  // tool is armed — otherwise it would fire accidentally while repositioning states.
+  const isConnectToolActive = editorMode === 'edit' && editorTool === 'connect';
 
   const flowNodes = storeNodes.map((n) => toFlowNode(n, activeNodeIds));
   const flowEdges = storeEdges.map(toFlowEdge);
@@ -128,7 +135,7 @@ export function AutomataCanvas(): ReactElement {
         onConnect={onConnect}
         // Disable all graph mutations in simulate mode
         nodesDraggable={!isSimulating}
-        nodesConnectable={!isSimulating}
+        nodesConnectable={isConnectToolActive}
         elementsSelectable={!isSimulating}
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         proOptions={{ hideAttribution: false }}
@@ -145,6 +152,13 @@ export function AutomataCanvas(): ReactElement {
           maskColor="rgba(17,24,39,0.7)"
           style={{ background: '#111827' }} // gray-900
         />
+        {isConnectToolActive && (
+          <Panel position="top-center" className="mt-4 pointer-events-none">
+            <div className="rounded-full bg-emerald-950/90 border border-emerald-700 px-3 py-1 text-xs text-emerald-300 font-medium select-none">
+              Connect mode — drag between states to add a transition
+            </div>
+          </Panel>
+        )}
         {storeNodes.length === 0 && (
           <Panel position="top-center" className="mt-20 pointer-events-none">
             <div className="flex flex-col items-center gap-2 text-center select-none">

@@ -15,7 +15,7 @@ export interface StateNodeData {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function StateNode({ id, data }: NodeProps<Node<StateNodeData>>): ReactElement {
+export function StateNode({ id, data, isConnectable }: NodeProps<Node<StateNodeData>>): ReactElement {
   const { label, isInitial, isAccepting, isActive } = data;
 
   const [isEditing, setIsEditing] = useState(false);
@@ -109,11 +109,13 @@ export function StateNode({ id, data }: NodeProps<Node<StateNodeData>>): ReactEl
       <Handle
         type="target"
         position={Position.Left}
+        isConnectable={isConnectable}
         className="!w-3 !h-3 !bg-indigo-500 !border-2 !border-indigo-300 opacity-0 hover:opacity-100 transition-opacity duration-150"
       />
       <Handle
         type="source"
         position={Position.Right}
+        isConnectable={isConnectable}
         className="!w-3 !h-3 !bg-indigo-500 !border-2 !border-indigo-300 opacity-0 hover:opacity-100 transition-opacity duration-150"
       />
     </div>

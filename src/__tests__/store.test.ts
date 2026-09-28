@@ -319,6 +319,34 @@ describe('useAutomataStore', () => {
     });
   });
 
+  // ─── editorTool ───────────────────────────────────────────────────────────
+
+  describe('editorTool', () => {
+    it('should default to "select"', () => {
+      expect(getState().editorTool).toBe('select');
+    });
+
+    it('should switch to "connect" when set', () => {
+      getState().setEditorTool('connect');
+
+      expect(getState().editorTool).toBe('connect');
+    });
+
+    it('should switch back to "select"', () => {
+      getState().setEditorTool('connect');
+      getState().setEditorTool('select');
+
+      expect(getState().editorTool).toBe('select');
+    });
+
+    it('should be reset to "select" by clearStore', () => {
+      getState().setEditorTool('connect');
+      getState().clearStore();
+
+      expect(getState().editorTool).toBe('select');
+    });
+  });
+
   // ─── deleteSelected (store-driven) ────────────────────────────────────────
 
   describe('deleteSelected (store-driven)', () => {
