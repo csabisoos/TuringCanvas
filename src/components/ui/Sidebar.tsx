@@ -24,21 +24,30 @@ function EditPanel(): ReactElement {
   const markInitial   = useAutomataStore((s) => s.markInitial);
   const markAccepting = useAutomataStore((s) => s.markAccepting);
   const deleteSelected = useAutomataStore((s) => s.deleteSelected);
+  const addTransition  = useAutomataStore((s) => s.addTransition);
 
   // Selection is kept in sync with React Flow via useOnSelectionChange in AutomataCanvas.
   const selectedNodeIds = useAutomataStore((s) => s.selectedNodeIds);
   const selectedEdgeIds = useAutomataStore((s) => s.selectedEdgeIds);
 
-  const hasSelection = selectedNodeIds.length > 0 || selectedEdgeIds.length > 0;
+  const hasSelection      = selectedNodeIds.length > 0 || selectedEdgeIds.length > 0;
   const singleSelectedNodeId = selectedNodeIds.length === 1 ? selectedNodeIds[0] : null;
+  /** True only when exactly 2 nodes are selected — enables the sidebar shortcut. */
+  const canAddTransition  = selectedNodeIds.length === 2;
 
   const isEmpty = nodes.length === 0;
 
   const [showHint, setShowHint] = useState(false);
 
-  function handleAddTransitionClick() {
-    setShowHint(true);
-    setTimeout(() => setShowHint(false), 4000);
+  function handleAddTransition(): void {
+    if (canAddTransition) {
+      // Fast path: two nodes already selected — create a ε transition between them.
+      addTransition(selectedNodeIds[0]!, selectedNodeIds[1]!);
+    } else {
+      // Fallback hint: guide the user to drag-connect handles.
+      setShowHint(true);
+      setTimeout(() => setShowHint(false), 4000);
+    }
   }
 
   function handleAddState(): void {
@@ -64,13 +73,27 @@ function EditPanel(): ReactElement {
       <SidebarButton id="sidebar-add-state-btn" icon={<CircleIcon />} aria-label="Add State" onClick={handleAddState}>
         Add State
       </SidebarButton>
-      {/* Add Transition — always enabled in edit mode */}
-      <SidebarButton id="sidebar-add-transition-btn" icon={<ArrowIcon />} aria-label="Add Transition" onClick={handleAddTransitionClick}>
+
+      {/* Add Transition — enabled immediately when exactly 2 nodes are selected;
+          falls back to a drag-handle hint when fewer/more nodes are selected. */}
+      <SidebarButton
+        id="sidebar-add-transition-btn"
+        icon={<ArrowIcon />}
+        aria-label="Add Transition"
+        onClick={handleAddTransition}
+        active={canAddTransition}
+      >
         Add Transition
       </SidebarButton>
       {showHint && (
         <p className="text-[10px] text-indigo-400 px-1 leading-relaxed">
-          Drag from the <strong>▶</strong> handle on any state to another state.
+          Select <strong>exactly 2 states</strong> to connect them, or drag
+          from the <strong>▶</strong> handle on any state.
+        </p>
+      )}
+      {canAddTransition && (
+        <p className="text-[10px] text-emerald-400 px-1 leading-relaxed">
+          Click <strong>Add Transition</strong> to connect the 2 selected states.
         </p>
       )}
 
@@ -83,7 +106,14 @@ function EditPanel(): ReactElement {
       <SidebarButton id="sidebar-mark-accepting-btn" icon={<CheckCircleIcon />} aria-label="Mark selected state as accepting" onClick={() => { if (singleSelectedNodeId) markAccepting(singleSelectedNodeId); }} disabled={!singleSelectedNodeId}>
         Mark Accepting
       </SidebarButton>
-      <SidebarButton id="sidebar-delete-selected-btn" icon={<TrashIcon />} aria-label="Delete selected elements" onClick={() => deleteSelected(selectedNodeIds, selectedEdgeIds)} disabled={!hasSelection} danger>
+      <SidebarButton
+        id="sidebar-delete-selected-btn"
+        icon={<TrashIcon />}
+        aria-label="Delete selected elements"
+        onClick={() => deleteSelected(selectedNodeIds, selectedEdgeIds)}
+        disabled={!hasSelection}
+        danger
+      >
         Delete Selected
       </SidebarButton>
 
@@ -231,6 +261,8 @@ interface SidebarButtonProps {
   'aria-label': string;
   disabled?: boolean;
   danger?: boolean;
+  /** Highlight the button in an "active/ready" state (emerald accent). */
+  active?: boolean;
   onClick?: () => void;
 }
 
@@ -241,18 +273,25 @@ function SidebarButton({
   'aria-label': ariaLabel,
   disabled = false,
   danger = false,
+  active = false,
   onClick,
 }: SidebarButtonProps): ReactElement {
   const base =
     'flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors duration-100 select-none text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900';
-  const normal = disabled
-    ? 'text-gray-600 cursor-not-allowed opacity-50'
-    : 'text-gray-300 hover:bg-gray-800 hover:text-white cursor-pointer';
-  const dangerCls = danger
-    ? disabled
+
+  // Priority: danger > active > normal.
+  let variantCls: string;
+  if (danger) {
+    variantCls = disabled
       ? 'text-red-900 cursor-not-allowed opacity-50'
-      : 'text-red-400 hover:bg-red-950 hover:text-red-300'
-    : '';
+      : 'text-red-400 hover:bg-red-950 hover:text-red-300 cursor-pointer';
+  } else if (active && !disabled) {
+    variantCls = 'text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/60 cursor-pointer';
+  } else {
+    variantCls = disabled
+      ? 'text-gray-600 cursor-not-allowed opacity-50'
+      : 'text-gray-300 hover:bg-gray-800 hover:text-white cursor-pointer';
+  }
 
   return (
     <button
@@ -261,7 +300,7 @@ function SidebarButton({
       disabled={disabled}
       onClick={onClick}
       aria-label={ariaLabel}
-      className={[base, danger ? dangerCls : normal].join(' ')}
+      className={`${base} ${variantCls}`}
     >
       <span className="shrink-0 opacity-70" aria-hidden="true">{icon}</span>
       {children}

@@ -104,7 +104,49 @@ describe('useAutomataStore', () => {
     });
   });
 
-  // ─── clearStore ───────────────────────────────────────────────────────────
+  // ─── addTransition ────────────────────────────────────────────────────────
+
+  describe('addTransition', () => {
+    beforeEach(() => {
+      getState().addNode({ id: 'q0', position: { x: 0, y: 0 }, label: 'q0', isInitial: true, isAccepting: false });
+      getState().addNode({ id: 'q1', position: { x: 200, y: 0 }, label: 'q1', isInitial: false, isAccepting: true });
+    });
+
+    it('should create an edge with source and target set correctly', () => {
+      getState().addTransition('q0', 'q1');
+
+      const { edges } = getState();
+      expect(edges).toHaveLength(1);
+      expect(edges[0].source).toBe('q0');
+      expect(edges[0].target).toBe('q1');
+    });
+
+    it('should default the symbol to ε', () => {
+      getState().addTransition('q0', 'q1');
+
+      expect(getState().edges[0].symbols).toEqual(['ε']);
+    });
+
+    it('should assign a unique id (non-empty string) to each transition', () => {
+      getState().addTransition('q0', 'q1');
+      getState().addTransition('q1', 'q0');
+
+      const { edges } = getState();
+      expect(edges).toHaveLength(2);
+      expect(edges[0].id).toBeTruthy();
+      expect(edges[1].id).toBeTruthy();
+      expect(edges[0].id).not.toBe(edges[1].id);
+    });
+
+    it('should support self-loop transitions', () => {
+      getState().addTransition('q0', 'q0');
+
+      const edge = getState().edges[0];
+      expect(edge.source).toBe('q0');
+      expect(edge.target).toBe('q0');
+    });
+  });
+
 
   describe('clearStore', () => {
     it('should remove all nodes and edges', () => {

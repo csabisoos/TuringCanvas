@@ -47,6 +47,11 @@ interface AutomataActions {
   addNode: (node: AutomataNode) => void;
   updateNodeLabel: (nodeId: string, label: string) => void;
   addEdge: (edge: AutomataEdge) => void;
+  /**
+   * Convenience action called by the Sidebar "Add Transition" button.
+   * Creates an edge with a default `ε` symbol between `source` and `target`.
+   */
+  addTransition: (source: string, target: string) => void;
   updateEdgeSymbols: (edgeId: string, symbols: string[]) => void;
   /** Sets the node with `id` as the only initial state (clears others). */
   markInitial: (id: string) => void;
@@ -170,6 +175,15 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
 
   addEdge: (edge): void => {
     set((state) => ({ edges: [...state.edges, edge] }));
+  },
+
+  addTransition: (source, target): void => {
+    set((state) => ({
+      edges: [
+        ...state.edges,
+        { id: crypto.randomUUID(), source, target, symbols: ['ε'] },
+      ],
+    }));
   },
 
   updateEdgeSymbols: (edgeId, symbols): void => {
