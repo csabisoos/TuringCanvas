@@ -49,6 +49,11 @@ function toFlowNode(
     id: node.id,
     type: 'stateNode',
     position: node.position,
+    // RF v12 keeps nodes visibility:hidden until it knows their dimensions.
+    // StateNode renders a fixed w-14 h-14 circle (56 × 56 px) — declare
+    // those here so hasDimensions is true from the very first render.
+    width: 56,
+    height: 56,
     data: {
       label: node.label,
       isInitial: node.isInitial,
