@@ -152,8 +152,12 @@ export function EditableEdge({
   // React Flow may swap source/target coordinates for right-to-left edges
   // (thinking "source should be left, target should be right"). Our handles are:
   // source = Position.Right, target = Position.Left. Detect and correct this.
-  const isSwapped =
+  // Check both: explicit position swap OR spatial swap (sourceX > targetX but handles suggest left-to-right)
+  const isSwappedByPosition =
     sourcePosition === Position.Left && targetPosition === Position.Right;
+  const isSwappedBySpatial = sourceX > targetX && sourcePosition !== Position.Right;
+  const isSwapped = isSwappedByPosition || isSwappedBySpatial;
+  
   const effSourceX = isSwapped ? targetX : sourceX;
   const effSourceY = isSwapped ? targetY : sourceY;
   const effTargetX = isSwapped ? sourceX : targetX;
