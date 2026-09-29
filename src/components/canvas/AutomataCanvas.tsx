@@ -8,6 +8,7 @@ import {
   MarkerType,
   Panel,
   useOnSelectionChange,
+  ConnectionMode,
 } from '@xyflow/react';
 import type { Node, NodeProps, Edge, NodeTypes, Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -160,6 +161,7 @@ export function AutomataCanvas(): ReactElement {
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         proOptions={{ hideAttribution: false }}
         defaultEdgeOptions={{ markerEnd: { type: MarkerType.ArrowClosed } }}
+        connectionMode={ConnectionMode.Strict}
       >
         <Background
           variant={BackgroundVariant.Dots}

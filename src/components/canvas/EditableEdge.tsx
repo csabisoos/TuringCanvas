@@ -3,6 +3,7 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
+  Position,
   type EdgeProps,
 } from '@xyflow/react';
 import { useAutomataStore } from '../../store/useAutomataStore';
@@ -147,15 +148,28 @@ export function EditableEdge({
   markerEnd,
 }: EdgeProps): ReactElement {
   const offset = useParallelEdgeOffset(id, source, target);
+
+  // React Flow may swap source/target coordinates for right-to-left edges
+  // (thinking "source should be left, target should be right"). Our handles are:
+  // source = Position.Right, target = Position.Left. Detect and correct this.
+  const isSwapped =
+    sourcePosition === Position.Left && targetPosition === Position.Right;
+  const effSourceX = isSwapped ? targetX : sourceX;
+  const effSourceY = isSwapped ? targetY : sourceY;
+  const effTargetX = isSwapped ? sourceX : targetX;
+  const effTargetY = isSwapped ? sourceY : targetY;
+  const effSourcePosition = isSwapped ? targetPosition : sourcePosition;
+  const effTargetPosition = isSwapped ? sourcePosition : targetPosition;
+
   const [edgePath, labelX, labelY] = offset !== 0
-    ? getOffsetPath(sourceX, sourceY, targetX, targetY, offset)
+    ? getOffsetPath(effSourceX, effSourceY, effTargetX, effTargetY, offset)
     : getBezierPath({
-        sourceX,
-        sourceY,
-        sourcePosition,
-        targetX,
-        targetY,
-        targetPosition,
+        sourceX: effSourceX,
+        sourceY: effSourceY,
+        sourcePosition: effSourcePosition,
+        targetX: effTargetX,
+        targetY: effTargetY,
+        targetPosition: effTargetPosition,
       });
 
   // Read symbols directly from the store by edge id.
