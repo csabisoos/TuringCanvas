@@ -107,12 +107,14 @@ export function StateNode({ id, data, isConnectable }: NodeProps<Node<StateNodeD
 
       {/* React Flow connection handles — enlarged hit-target so drag-to-connect is reliable */}
       <Handle
+        id="target"
         type="target"
         position={Position.Left}
         isConnectable={isConnectable}
         className="!w-3 !h-3 !bg-indigo-500 !border-2 !border-indigo-300 opacity-0 hover:opacity-100 transition-opacity duration-150"
       />
       <Handle
+        id="source"
         type="source"
         position={Position.Right}
         isConnectable={isConnectable}
