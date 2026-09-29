@@ -145,6 +145,7 @@ export function AutomataCanvas(): ReactElement {
         elementsSelectable={!isSimulating}
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         proOptions={{ hideAttribution: false }}
+        defaultEdgeOptions={{ markerEnd: { type: MarkerType.ArrowClosed } }}
       >
         <Background
           variant={BackgroundVariant.Dots}
