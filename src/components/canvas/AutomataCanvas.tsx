@@ -9,7 +9,7 @@ import {
   Panel,
   useOnSelectionChange,
 } from '@xyflow/react';
-import type { Node, NodeProps, Edge, NodeTypes } from '@xyflow/react';
+import type { Node, NodeProps, Edge, NodeTypes, Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { useAutomataStore } from '../../store/useAutomataStore';
@@ -120,6 +120,20 @@ export function AutomataCanvas(): ReactElement {
   // tool is armed — otherwise it would fire accidentally while repositioning states.
   const isConnectToolActive = editorMode === 'edit' && editorTool === 'connect';
 
+  // Wrap onConnect to enforce handle semantics: connection MUST originate from a
+  // 'source' handle and terminate at a 'target' handle. This prevents React Flow
+  // from inferring direction based on spatial layout (left-to-right bias).
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      // Only accept connections from explicit source→target handles
+      if (connection.sourceHandle !== 'source' || connection.targetHandle !== 'target') {
+        return;
+      }
+      onConnect(connection);
+    },
+    [onConnect],
+  );
+
   const flowNodes = useMemo(
     () => storeNodes.map((n) => toFlowNode(n, activeNodeIds)),
     [storeNodes, activeNodeIds],
@@ -138,7 +152,7 @@ export function AutomataCanvas(): ReactElement {
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        onConnect={handleConnect}
         // Disable all graph mutations in simulate mode
         nodesDraggable={!isSimulating}
         nodesConnectable={isConnectToolActive}
