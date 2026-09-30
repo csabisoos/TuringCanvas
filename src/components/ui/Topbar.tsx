@@ -6,6 +6,17 @@ import { useAutomataStore } from '../../store/useAutomataStore';
 export function Topbar(): ReactElement {
   const editorMode = useAutomataStore((s) => s.editorMode);
   const setEditorMode = useAutomataStore((s) => s.setEditorMode);
+  const returnToMenu = useAutomataStore((s) => s.returnToMenu);
+  const nodes = useAutomataStore((s) => s.nodes);
+  const edges = useAutomataStore((s) => s.edges);
+
+  const handleHomeClick = (): void => {
+    const hasChanges = nodes.length > 0 || edges.length > 0;
+    if (hasChanges && !window.confirm('You have unsaved changes. Return to Main Menu anyway?')) {
+      return;
+    }
+    returnToMenu(false); // keep workspace for potential return
+  };
 
   return (
     <header className="flex-none h-14 border-b border-gray-800 bg-gray-900 flex items-center px-4 gap-4 shadow-lg z-10">
@@ -25,6 +36,16 @@ export function Topbar(): ReactElement {
           alpha
         </span>
       </div>
+
+      {/* Home / Menu button */}
+      <button
+        type="button"
+        onClick={handleHomeClick}
+        aria-label="Back to Main Menu"
+        className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900"
+      >
+        <HomeIcon />
+      </button>
 
       {/* Spacer */}
       <div className="flex-1" />
@@ -123,6 +144,25 @@ function PlayIcon(): ReactElement {
       aria-hidden="true"
     >
       <polygon points="5 3 19 12 5 21 5 3" />
+    </svg>
+  );
+}
+
+function HomeIcon(): ReactElement {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
     </svg>
   );
 }

@@ -1,10 +1,18 @@
 import type { ReactElement } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
+import { useAutomataStore } from './store/useAutomataStore';
 import { Topbar } from './components/ui/Topbar';
 import { Sidebar } from './components/ui/Sidebar';
 import { AutomataCanvas } from './components/canvas/AutomataCanvas';
+import { MainMenu } from './components/ui/MainMenu';
 
 function App(): ReactElement {
+  const appView = useAutomataStore((s) => s.appView);
+
+  if (appView === 'menu') {
+    return <MainMenu />;
+  }
+
   return (
     <div className="h-screen bg-gray-950 text-gray-100 flex flex-col overflow-hidden">
       {/* ── Top bar ─────────────────────────────────────────────────────── */}

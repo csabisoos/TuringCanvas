@@ -13,6 +13,9 @@ interface SerializedGraph {
 
 // ── Store types ───────────────────────────────────────────────────────────────
 
+export type AppView = 'menu' | 'editor';
+export type MachineType = 'fa' | 'pda' | 'tm'; // Finite Automaton, Pushdown Automaton, Turing Machine
+
 type EditorMode = 'edit' | 'simulate';
 /**
  * 'select' — default canvas interaction (drag to move/select nodes, no new edges).
@@ -27,6 +30,10 @@ interface AutomataState {
   edges: AutomataEdge[];
   editorMode: EditorMode;
   editorTool: EditorTool;
+
+  // ── App navigation state ────────────────────────────────────────────────────
+  appView: AppView;
+  machineType: MachineType | null;
 
   // ── Selection state ───────────────────────────────────────────────────────
   /** IDs of nodes currently selected on the canvas. Kept in sync via useOnSelectionChange. */
@@ -121,6 +128,12 @@ interface AutomataActions {
    * Clears all simulation state back to the "not started" baseline.
    */
   resetSimulation: () => void;
+
+  // ── Navigation actions ─────────────────────────────────────────────────────
+  /** Switches to the editor for the given machine type. */
+  openEditor: (type: MachineType) => void;
+  /** Returns to the main menu; optionally clears the current workspace. */
+  returnToMenu: (clearWorkspace?: boolean) => void;
 }
 
 type AutomataStore = AutomataState & AutomataActions;
@@ -140,6 +153,8 @@ const INITIAL_STATE: AutomataState = {
   edges: [],
   editorMode: 'edit',
   editorTool: 'select',
+  appView: 'menu',
+  machineType: null,
   selectedNodeIds: [],
   selectedEdgeIds: [],
   ...SIMULATION_RESET,
@@ -401,4 +416,16 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
   },
 
   resetSimulation: (): void => { set(SIMULATION_RESET); },
+
+  openEditor: (type): void => {
+    set({ appView: 'editor', machineType: type });
+  },
+
+  returnToMenu: (clearWorkspace = false): void => {
+    if (clearWorkspace) {
+      set({ ...INITIAL_STATE, appView: 'menu', machineType: null });
+    } else {
+      set({ appView: 'menu', machineType: null });
+    }
+  },
 }));
