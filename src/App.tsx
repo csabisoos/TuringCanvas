@@ -1,9 +1,7 @@
-import type { ReactElement } from 'react';
-import { ReactFlowProvider } from '@xyflow/react';
+import type { ReactElement, ComponentType } from 'react';
 import { useAutomataStore } from './store/useAutomataStore';
 import { Topbar } from './components/ui/Topbar';
 import { AppSidebar } from './components/ui/AppSidebar';
-import { AutomataCanvas } from './components/canvas/AutomataCanvas';
 import { Dashboard } from './components/views/Dashboard';
 import { EditorView } from './components/views/EditorView';
 import { SettingsView } from './components/views/SettingsView';
@@ -13,11 +11,11 @@ function App(): ReactElement {
   const contentView = useAutomataStore((s) => s.contentView);
 
   // Map contentView to the corresponding view component
-  const viewComponents: Record<string, React.ReactNode> = {
-    dashboard: <Dashboard />,
-    editor: <EditorView />,
-    settings: <SettingsView />,
-    help: <HelpView />,
+  const viewComponents: Record<string, ComponentType> = {
+    dashboard: Dashboard,
+    editor: EditorView,
+    settings: SettingsView,
+    help: HelpView,
   };
 
   const ViewComponent = viewComponents[contentView] ?? viewComponents.dashboard;

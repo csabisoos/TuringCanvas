@@ -3,7 +3,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
-import type { MachineType } from '../types/machineTypes.tsx';
 import { buildAndSimulate } from './simulationAdapter';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
@@ -263,8 +262,10 @@ function parseAndValidate(json: string): SerializedGraph {
 
 // ── Store ─────────────────────────────────────────────────────────────────────
 
-export const useAutomataStore = create<AutomataStore>((set, get) => ({
-  ...INITIAL_STATE,
+export const useAutomataStore = create<AutomataStore>()(
+  persist(
+    (set, get) => ({
+      ...INITIAL_STATE,
       addNode: (node): void => {
     set((state) => ({ nodes: [...state.nodes, node] }));
   },
@@ -537,7 +538,7 @@ export const useAutomataStore = create<AutomataStore>((set, get) => ({
   // ── File operations (stubs) ─────────────────────────────────────────────────
 
   newFile: (): void => {
-    set((state) => ({
+    set(() => ({
       nodes: [],
       edges: [],
       machineType: null,
@@ -569,10 +570,11 @@ export const useAutomataStore = create<AutomataStore>((set, get) => ({
     // TODO: Implement LaTeX/TikZ export
     console.warn('exportLaTeX not yet implemented');
   },
-}),
-  {
-    name: 'turingcanvas-preferences',
-    storage: createJSONStorage(() => localStorage),
-    partialize: (state) => ({ preferences: state.preferences }),
-  }
+    }),
+    {
+      name: 'turingcanvas-preferences',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ preferences: state.preferences }),
+    }
+  )
 );

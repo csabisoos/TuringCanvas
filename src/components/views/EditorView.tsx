@@ -1,21 +1,13 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
-import { ContentView } from '../../store/useAutomataStore';
-import { EditorMode } from '../../store/useAutomataStore';
 
 import { Topbar } from '../ui/Topbar';
 import { AppSidebar } from '../ui/AppSidebar';
 import { AutomataCanvas } from '../canvas/AutomataCanvas';
 
 export function EditorView(): ReactNode {
-  const contentView = useAutomataStore((s) => s.contentView);
-  const setContentView = useAutomataStore((s) => s.setContentView);
   const editorMode = useAutomataStore((s) => s.editorMode);
   const setEditorMode = useAutomataStore((s) => s.setEditorMode);
-  const sidebarCollapsed = useAutomataStore((s) => s.sidebarCollapsed);
-  const toggleSidebar = useAutomataStore((s) => s.toggleSidebar);
-  const nodes = useAutomataStore((s) => s.nodes);
-  const edges = useAutomataStore((s) => s.edges);
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col overflow-hidden">

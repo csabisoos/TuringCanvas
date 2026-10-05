@@ -1,7 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
-import { ContentView, MachineType } from '../../store/useAutomataStore';
-import { getMachineTypesByCategory, getImplementedMachineTypes, MACHINE_TYPES } from '../../types/machineTypes.tsx';
+import { getMachineTypesByCategory } from '../../types/machineTypes';
 
 const CATEGORIES_ORDER: ('automata' | 'machines' | 'formal-languages' | 'analysis')[] = [
   'automata',
@@ -12,9 +11,6 @@ const CATEGORIES_ORDER: ('automata' | 'machines' | 'formal-languages' | 'analysi
 
 export function Dashboard(): ReactNode {
   const setContentView = useAutomataStore((s) => s.setContentView);
-
-  const implemented = getImplementedMachineTypes();
-  const byCategory = getMachineTypesByCategory;
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col items-center justify-center px-4 py-12">
@@ -40,7 +36,7 @@ export function Dashboard(): ReactNode {
       {/* Machine type cards grouped by category */}
       <main className="w-full max-w-2xl space-y-4">
         {CATEGORIES_ORDER.map((category) => {
-          const types = byCategory(category);
+          const types = getMachineTypesByCategory(category);
           if (types.length === 0) return null;
 
           const implementedInCat = types.filter((t) => !t.comingSoon);
@@ -62,7 +58,6 @@ export function Dashboard(): ReactNode {
                       description={t.description}
                       icon={t.icon}
                       onClick={() => setContentView('editor')}
-                      type={t.type as MachineType}
                     />
                   ))}
                 </div>
@@ -81,7 +76,6 @@ export function Dashboard(): ReactNode {
                       description={t.description}
                       icon={t.icon}
                       onClick={() => setContentView('editor')}
-                      type={t.type as MachineType}
                       comingSoon
                     />
                   ))}
@@ -142,7 +136,6 @@ interface MachineTypeCardProps {
   description: string;
   icon: ReactElement;
   onClick: () => void;
-  type?: MachineType;
   comingSoon?: boolean;
 }
 
@@ -151,12 +144,8 @@ function MachineTypeCard({
   description,
   icon,
   onClick,
-  type,
   comingSoon = false,
 }: MachineTypeCardProps): ReactElement {
-  const badgeClassName = comingSoon
-    ? 'absolute -top-1 -right-1 rounded-full bg-red-500 text-xs text-white px-1.5 py-0.5 font-medium'
-    : '';
 
   return (
     <button
@@ -171,7 +160,7 @@ function MachineTypeCard({
       ].join(' ')}
       aria-label={title}
     >
-      <span className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-indigo-950/50 border border-indigo-800 text-indigo-400 {badgeClassName}" aria-hidden="true">
+      <span className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-indigo-950/50 border border-indigo-800 text-indigo-400 relative" aria-hidden="true">
         {icon}
         {comingSoon && (
           <span className="absolute -top-1 -right-1 rounded-full bg-red-500 text-xs text-white px-1.5 py-0.5 font-medium">coming Soon</span>

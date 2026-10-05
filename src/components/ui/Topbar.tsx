@@ -1,6 +1,5 @@
 import type { ReactElement } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
-import { AppSidebar } from '../AppSidebar';
 
 export function Topbar(): ReactElement {
   const sidebarCollapsed = useAutomataStore((s) => s.sidebarCollapsed);

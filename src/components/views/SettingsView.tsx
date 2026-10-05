@@ -1,6 +1,5 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
-import { UserPreferences } from '../../store/useAutomataStore';
 
 export function SettingsView(): ReactNode {
   const preferences = useAutomataStore((s) => s.preferences);
@@ -15,7 +14,7 @@ export function SettingsView(): ReactNode {
     { id: 'advanced', label: 'Advanced' },
   ];
 
-  const handleTabChange = (tabId: string) => {
+  const handleTabChange = (_tabId: string) => {
     // Scroll or state management could go here
   };
 
@@ -33,7 +32,7 @@ export function SettingsView(): ReactNode {
               ${preferences.theme === 'dark' ? 'text-gray-300 bg-gray-800' : 'text-gray-600 bg-gray-200'}
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1
               ${tab.id === 'general' ? 'border-b-2 border-indigo-600 text-indigo-400 bg-indigo-900/30' : 'border-b-2 border-transparent'}
-            `
+            `}
           >
             {tab.label}
           </button>
@@ -122,8 +121,8 @@ export function SettingsView(): ReactNode {
                 <input
                   type="number"
                   value={String(preferences.fontSize)}
-                  onChange={(e =>
-                    updatePreferences({ fontSize: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    updatePreferences({ fontSize: Number(e.target.value) })}
                   min="8"
                   max="24"
                   step="1"
@@ -135,8 +134,8 @@ export function SettingsView(): ReactNode {
                 <input
                   type="number"
                   value={String(preferences.edgeCurvature)}
-                  onChange={(e =>
-                    updatePreferences({ edgeCurvature: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    updatePreferences({ edgeCurvature: Number(e.target.value) })}
                   min="0"
                   max="1"
                   step="0.01"
@@ -148,8 +147,8 @@ export function SettingsView(): ReactNode {
                 <input
                   type="number"
                   value={String(preferences.handleSize)}
-                  onChange={(e =>
-                    updatePreferences({ handleSize: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    updatePreferences({ handleSize: Number(e.target.value) })}
                   min="8"
                   max="24"
                   step="1"
@@ -164,7 +163,7 @@ export function SettingsView(): ReactNode {
                 <input
                   type="checkbox"
                   checked={preferences.debugMode}
-                  onChange={(e => updatePreferences({ debugMode: e.target.checked }))}
+                  onChange={(e) => updatePreferences({ debugMode: e.target.checked })}
                   className="w-4 h-4 rounded bg-indigo-600 cursor-pointer border-gray-600"
                 />
               </label>
@@ -173,7 +172,7 @@ export function SettingsView(): ReactNode {
                 <input
                   type="checkbox"
                   checked={preferences.telemetry}
-                  onChange={(e => updatePreferences({ telemetry: e.target.checked }))}
+                  onChange={(e) => updatePreferences({ telemetry: e.target.checked })}
                   className="w-4 h-4 rounded bg-indigo-600 cursor-pointer border-gray-600"
                 />
               </label>
@@ -191,8 +190,8 @@ export function SettingsView(): ReactNode {
                 <input
                   type="number"
                   value={String(preferences.animationSpeed)}
-                  onChange={(e =>
-                    updatePreferences({ animationSpeed: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    updatePreferences({ animationSpeed: Number(e.target.value) })}
                   min="0.5"
                   max="5"
                   step="0.1"
@@ -204,8 +203,8 @@ export function SettingsView(): ReactNode {
                 <input
                   type="number"
                   value={String(preferences.animationSpeed)}
-                  onChange={(e =>
-                    updatePreferences({ animationSpeed: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    updatePreferences({ animationSpeed: Number(e.target.value) })}
                   min="0.1"
                   max="5"
                   step="0.1"

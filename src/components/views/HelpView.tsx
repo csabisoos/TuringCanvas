@@ -1,5 +1,16 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
+
+interface KeyboardShortcut {
+  key: string;
+  action: string;
+}
+
+interface AboutItem {
+  label: string;
+  href: string | undefined;
+  description: string;
+}
 
 export function HelpView(): ReactNode {
   const returnToMenu = useAutomataStore((s) => s.returnToMenu);
@@ -11,7 +22,7 @@ export function HelpView(): ReactNode {
     repository: 'https://github.com/csabisoos/TuringCanvas',
   };
 
-  const keyboardShortcuts = [
+  const keyboardShortcuts: KeyboardShortcut[] = [
     { key: 'Ctrl/Cmd + N', action: 'New File' },
     { key: 'Ctrl/Cmd + O', action: 'Open File' },
     { key: 'Ctrl/Cmd + S', action: 'Save File' },
@@ -22,19 +33,10 @@ export function HelpView(): ReactNode {
     { key: 'Backspace', action: 'Reset Simulation' },
   ];
 
-  const helpSections = [
-    {
-      title: 'Keyboard Shortcuts',
-      items: keyboardShortcuts,
-    },
-    {
-      title: 'About',
-      items: [
-        { label: 'TuringCanvas', href: aboutInfo.repository, description: 'JFLAP-style automata simulator' },
-        { label: 'Version', href: undefined, description: aboutInfo.version },
-        { label: 'License', href: undefined, description: 'MIT' },
-      ],
-    },
+  const aboutItems: AboutItem[] = [
+    { label: 'TuringCanvas', href: aboutInfo.repository, description: 'JFLAP-style automata simulator' },
+    { label: 'Version', href: undefined, description: aboutInfo.version },
+    { label: 'License', href: undefined, description: 'MIT' },
   ];
 
   return (
@@ -60,42 +62,46 @@ export function HelpView(): ReactNode {
 
       {/* Help sections */}
       <div className="space-y-8">
-        {helpSections.map((section) => (
-          <section key={section.title} className="hidden">
-            <h2 className="text-lg font-medium text-white mb-4">
-              {section.title}
-            </h2>
-            <div className="space-y-4">
-              {section.items.map((item) => {
-                if (item.href) {
-                  return (
-                    <div key={item.label} className="flex items-center gap-2">
-                      <a
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-indigo-400 hover:text-indigo-300 transition-colors"
-                      >
-                        {item.label}
-                      </a>
-                      <span className="text-gray-500 text-sm">— {item.description}</span>
-                    </div>
-                  );
-                }
-                return (
-                  <div key={item.label} className="flex items-center gap-2">
-                    <span className="text-gray-400">
-                      <kbd className="px-1 py-0.5 rounded text-xs bg-gray-800 text-white">
-                        {item.key}
-                      </kbd>
-                    </span>
-                    <span className="text-gray-400 text-sm">— {item.description}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        ))}
+        {/* Keyboard Shortcuts section */}
+        <section className="hidden">
+          <h2 className="text-lg font-medium text-white mb-4">Keyboard Shortcuts</h2>
+          <div className="space-y-4">
+            {keyboardShortcuts.map((item) => (
+              <div key={item.key} className="flex items-center gap-2">
+                <span className="text-gray-400">
+                  <kbd className="px-1 py-0.5 rounded text-xs bg-gray-800 text-white">
+                    {item.key}
+                  </kbd>
+                </span>
+                <span className="text-gray-400 text-sm">— {item.action}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* About section */}
+        <section className="hidden">
+          <h2 className="text-lg font-medium text-white mb-4">About</h2>
+          <div className="space-y-4">
+            {aboutItems.map((item) => (
+              <div key={item.label} className="flex items-center gap-2">
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <span className="text-gray-400">{item.label}</span>
+                )}
+                <span className="text-gray-500 text-sm">— {item.description}</span>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
 
       {/* Return to menu button */}

@@ -257,7 +257,7 @@ export function AppSidebar(): ReactNode {
             aria-pressed={isActive(item.id)}
             aria-label={item.label}
           >
-            <item.icon />
+            {item.icon}
             <span className="hidden sm:inline">{item.label}</span>
           </button>
         ))}
