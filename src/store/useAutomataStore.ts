@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
-import type { MachineType } from '../types/machineTypes';
+import type { MachineType } from '../types/machineTypes.tsx';
 import { buildAndSimulate } from './simulationAdapter';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────

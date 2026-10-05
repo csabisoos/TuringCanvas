@@ -41,7 +41,7 @@ export function EditorView(): ReactNode {
               {editorMode === 'edit' ? 'Switch to Simulate' : 'Switch to Edit'}
             </button>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

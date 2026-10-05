@@ -1,7 +1,7 @@
 import type { ReactElement, ReactNode } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
 import { ContentView, MachineType } from '../../store/useAutomataStore';
-import { getMachineTypesByCategory, getImplementedMachineTypes, MACHINE_TYPES } from '../../types/machineTypes';
+import { getMachineTypesByCategory, getImplementedMachineTypes, MACHINE_TYPES } from '../../types/machineTypes.tsx';
 
 const CATEGORIES_ORDER: ('automata' | 'machines' | 'formal-languages' | 'analysis')[] = [
   'automata',

@@ -289,9 +289,10 @@ export function SettingsView(): ReactNode {
             <div>
               <label className="block text-sm text-gray-300 mb-1.5">
                 Debug Mode
-                <checked
+                <input
+                  type="checkbox"
                   checked={preferences.debugMode}
-                  onChange={(e => updatePreferences({ debugMode: e.target.checked }))}
+                  onChange={(e) => updatePreferences({ debugMode: e.target.checked })}
                   className="w-4 h-4 rounded bg-indigo-600 cursor-pointer border-gray-600"
                 />
               </label>
