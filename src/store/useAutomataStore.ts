@@ -16,7 +16,18 @@ interface SerializedGraph {
 // ── Store types ───────────────────────────────────────────────────────────────
 
 export type ContentView = 'dashboard' | 'editor' | 'settings' | 'help';
-export type MachineType = 'fa' | 'pda' | 'tm' | 'mtm' | 'mealy' | 'moore' | 'grammar' | 'l-system' | 'regex' | 'cfg-pumping' | 'reg-pumping';
+export type MachineType =
+  | 'fa'           // Finite Automaton (DFA/NFA)
+  | 'pda'          // Pushdown Automaton
+  | 'tm'           // Turing Machine
+  | 'mtm'          // Multi-tape Turing Machine
+  | 'mealy'        // Mealy Machine
+  | 'moore'        // Moore Machine
+  | 'grammar'      // Grammar (CFG)
+  | 'l-system'     // L-System
+  | 'regex'        // Regular Expression
+  | 'cfg-pumping'  // Context-Free Pumping Lemma
+  | 'reg-pumping'; // Regular Pumping Lemma
 
 type EditorMode = 'edit' | 'simulate';
 /**
