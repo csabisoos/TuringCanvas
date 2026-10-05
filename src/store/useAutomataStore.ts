@@ -252,11 +252,8 @@ function parseAndValidate(json: string): SerializedGraph {
 
 // ── Store ─────────────────────────────────────────────────────────────────────
 
-export const useAutomataStore = create<AutomataStore>()(
-  persist(
-    (set, get) => ({
-      ...INITIAL_STATE,
-
+export const useAutomataStore = create<AutomataStore>((set, get) => ({
+  ...INITIAL_STATE,
       addNode: (node): void => {
     set((state) => ({ nodes: [...state.nodes, node] }));
   },
