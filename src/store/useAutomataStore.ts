@@ -1,7 +1,9 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
+import type { MachineType } from '../types/machineTypes';
 import { buildAndSimulate } from './simulationAdapter';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
@@ -13,8 +15,8 @@ interface SerializedGraph {
 
 // ── Store types ───────────────────────────────────────────────────────────────
 
-export type AppView = 'menu' | 'editor';
-export type MachineType = 'fa' | 'pda' | 'tm'; // Finite Automaton, Pushdown Automaton, Turing Machine
+export type ContentView = 'dashboard' | 'editor' | 'settings' | 'help';
+export type MachineType = 'fa' | 'pda' | 'tm' | 'mtm' | 'mealy' | 'moore' | 'grammar' | 'l-system' | 'regex' | 'cfg-pumping' | 'reg-pumping';
 
 type EditorMode = 'edit' | 'simulate';
 /**
@@ -25,6 +27,36 @@ type EditorMode = 'edit' | 'simulate';
  */
 type EditorTool = 'select' | 'connect';
 
+export interface UserPreferences {
+  theme: 'dark' | 'light' | 'system';
+  autoSave: boolean;
+  showGrid: boolean;
+  snapToGrid: boolean;
+  animationSpeed: number;
+  defaultMachineType: MachineType | null;
+  startupView: ContentView;
+  fontSize: number;
+  edgeCurvature: number;
+  handleSize: number;
+  debugMode: boolean;
+  telemetry: boolean;
+}
+
+const DEFAULT_PREFERENCES: UserPreferences = {
+  theme: 'dark',
+  autoSave: false,
+  showGrid: true,
+  snapToGrid: true,
+  animationSpeed: 1.0,
+  defaultMachineType: null,
+  startupView: 'dashboard',
+  fontSize: 13,
+  edgeCurvature: 0.5,
+  handleSize: 12,
+  debugMode: false,
+  telemetry: false,
+};
+
 interface AutomataState {
   nodes: AutomataNode[];
   edges: AutomataEdge[];
@@ -32,7 +64,8 @@ interface AutomataState {
   editorTool: EditorTool;
 
   // ── App navigation state ────────────────────────────────────────────────────
-  appView: AppView;
+  contentView: ContentView;
+  sidebarCollapsed: boolean;
   machineType: MachineType | null;
 
   // ── Selection state ───────────────────────────────────────────────────────
@@ -56,6 +89,9 @@ interface AutomataState {
   simulationError: string | null;
   /** Set to true/false after the last step is reached; null while in-progress. */
   simulationAccepted: boolean | null;
+
+  // ── Preferences ───────────────────────────────────────────────────────────
+  preferences: UserPreferences;
 }
 
 interface AutomataActions {
@@ -130,10 +166,38 @@ interface AutomataActions {
   resetSimulation: () => void;
 
   // ── Navigation actions ─────────────────────────────────────────────────────
+  /** Sets the current content view (dashboard, editor, settings, help). */
+  setContentView: (view: ContentView) => void;
+  /** Toggles the sidebar collapsed state. */
+  toggleSidebar: () => void;
+  /** Sets the sidebar collapsed state explicitly. */
+  setSidebarCollapsed: (collapsed: boolean) => void;
   /** Switches to the editor for the given machine type. */
   openEditor: (type: MachineType) => void;
-  /** Returns to the main menu; optionally clears the current workspace. */
+  /** Returns to the dashboard; optionally clears the current workspace. */
+  returnToDashboard: (clearWorkspace?: boolean) => void;
+  /** @deprecated Use returnToDashboard instead. Kept for backward compatibility. */
   returnToMenu: (clearWorkspace?: boolean) => void;
+
+  // ── Preferences actions ────────────────────────────────────────────────────
+  /** Updates preferences partially (merged with existing). */
+  updatePreferences: (prefs: Partial<UserPreferences>) => void;
+  /** Resets preferences to defaults. */
+  resetPreferences: () => void;
+
+  // ── File operations ────────────────────────────────────────────────────────
+  /** Creates a new empty file. */
+  newFile: () => void;
+  /** Opens a file using the File System Access API. */
+  openFile: () => Promise<void>;
+  /** Saves the current file. */
+  saveFile: () => Promise<void>;
+  /** Saves the current file with a new name. */
+  saveFileAs: () => Promise<void>;
+  /** Exports the current canvas as an image. */
+  exportImage: () => void;
+  /** Exports the current automaton as LaTeX/TikZ. */
+  exportLaTeX: () => void;
 }
 
 type AutomataStore = AutomataState & AutomataActions;
@@ -153,10 +217,12 @@ const INITIAL_STATE: AutomataState = {
   edges: [],
   editorMode: 'edit',
   editorTool: 'select',
-  appView: 'menu',
+  contentView: 'dashboard',
+  sidebarCollapsed: false,
   machineType: null,
   selectedNodeIds: [],
   selectedEdgeIds: [],
+  preferences: DEFAULT_PREFERENCES,
   ...SIMULATION_RESET,
 };
 
@@ -186,10 +252,12 @@ function parseAndValidate(json: string): SerializedGraph {
 
 // ── Store ─────────────────────────────────────────────────────────────────────
 
-export const useAutomataStore = create<AutomataStore>()((set, get) => ({
-  ...INITIAL_STATE,
+export const useAutomataStore = create<AutomataStore>()(
+  persist(
+    (set, get) => ({
+      ...INITIAL_STATE,
 
-  addNode: (node): void => {
+      addNode: (node): void => {
     set((state) => ({ nodes: [...state.nodes, node] }));
   },
 
@@ -418,14 +486,85 @@ export const useAutomataStore = create<AutomataStore>()((set, get) => ({
   resetSimulation: (): void => { set(SIMULATION_RESET); },
 
   openEditor: (type): void => {
-    set({ appView: 'editor', machineType: type });
+    set({ contentView: 'editor', machineType: type });
   },
 
-  returnToMenu: (clearWorkspace = false): void => {
+  returnToDashboard: (clearWorkspace = false): void => {
     if (clearWorkspace) {
-      set({ ...INITIAL_STATE, appView: 'menu', machineType: null });
+      set({ ...INITIAL_STATE, contentView: 'dashboard', machineType: null });
     } else {
-      set({ appView: 'menu', machineType: null });
+      set({ contentView: 'dashboard', machineType: null });
     }
   },
-}));
+
+  /** @deprecated Use returnToDashboard instead. Kept for backward compatibility. */
+  returnToMenu: (clearWorkspace = false): void => {
+    get().returnToDashboard(clearWorkspace);
+  },
+
+  // ── Navigation actions ─────────────────────────────────────────────────────
+
+  setContentView: (view): void => {
+    set({ contentView: view });
+  },
+
+  toggleSidebar: (): void => {
+    set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
+  },
+
+  setSidebarCollapsed: (collapsed): void => {
+    set({ sidebarCollapsed: collapsed });
+  },
+
+  // ── Preferences actions ─────────────────────────────────────────────────────
+
+  updatePreferences: (prefs): void => {
+    set((state) => ({ preferences: { ...state.preferences, ...prefs } }));
+  },
+
+  resetPreferences: (): void => {
+    set({ preferences: DEFAULT_PREFERENCES });
+  },
+
+  // ── File operations (stubs) ─────────────────────────────────────────────────
+
+  newFile: (): void => {
+    set((state) => ({
+      nodes: [],
+      edges: [],
+      machineType: null,
+      ...SIMULATION_RESET,
+    }));
+  },
+
+  openFile: async (): Promise<void> => {
+    // TODO: Implement File System Access API
+    console.warn('openFile not yet implemented');
+  },
+
+  saveFile: async (): Promise<void> => {
+    // TODO: Implement File System Access API
+    console.warn('saveFile not yet implemented');
+  },
+
+  saveFileAs: async (): Promise<void> => {
+    // TODO: Implement File System Access API
+    console.warn('saveFileAs not yet implemented');
+  },
+
+  exportImage: (): void => {
+    // TODO: Implement canvas export to image
+    console.warn('exportImage not yet implemented');
+  },
+
+  exportLaTeX: (): void => {
+    // TODO: Implement LaTeX/TikZ export
+    console.warn('exportLaTeX not yet implemented');
+  },
+}),
+  {
+    name: 'turingcanvas-preferences',
+    storage: createJSONStorage(() => localStorage),
+    partialize: (state) => ({ preferences: state.preferences }),
+  }
+);
