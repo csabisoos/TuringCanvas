@@ -96,9 +96,9 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 
 ## Phase 11: Turing Machines (TM) Module 🚀
 
-* [ ] Task 4.1: Core 1-Tape Turing Machine Engine (`src/core/TM.ts`, $L/R/S$ moves, infinite tape)
-* [ ] Task 4.2: TM Simulation Adapter & Animated Horizontal Tape Ribbon UI
-* [ ] Task 4.3: Multi-Tape Turing Machine Engine & Visualization ($k \ge 2$)
+* [x] Task 4.1: Core 1-Tape Turing Machine Engine (`src/core/TM.ts`, $L/R/S$ moves, infinite tape) — *Completed 2026-11-08*
+* [x] Task 4.2: TM Simulation Adapter & Animated Horizontal Tape Ribbon UI — *Completed 2026-11-08*
+* [x] Task 4.3: Multi-Tape Turing Machine Engine & Visualization ($k \ge 2$) — *Completed 2026-11-08*
 * [ ] Task 4.4: Building Block Turing Machines (Macro nodes & subprograms)
 
 ## Phase 12: Transducers (Mealy & Moore Machines) 🚀

@@ -1,6 +1,7 @@
 import { useState, useEffect, type ReactElement } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
 import { StackVisualizer } from '../pda/StackVisualizer';
+import { TapeVisualizer } from '../tm/TapeVisualizer';
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function Sidebar(): ReactElement {
@@ -240,6 +241,7 @@ function SimulatePanel(): ReactElement {
   const simulationAccepted = useAutomataStore((s) => s.simulationAccepted);
   const machineType = useAutomataStore((s) => s.machineType);
   const pdaSteps = useAutomataStore((s) => s.pdaSteps);
+  const tmSteps = useAutomataStore((s) => s.tmSteps);
   // Disable simulation controls when no automaton has been drawn yet
   const hasNodes = useAutomataStore((s) => s.nodes.length > 0);
 
@@ -416,6 +418,12 @@ function SimulatePanel(): ReactElement {
       {(machineType === 'pda' || pdaSteps !== null) && (
         <div className="pt-2">
           <StackVisualizer />
+        </div>
+      )}
+
+      {(machineType === 'tm' || tmSteps !== null) && (
+        <div className="pt-2">
+          <TapeVisualizer />
         </div>
       )}
     </div>

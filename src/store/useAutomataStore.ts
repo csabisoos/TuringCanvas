@@ -7,6 +7,8 @@ import type { FastRunResult } from '../types/simulation';
 import type { TestCase } from '../types/batchTest';
 import type { PDASimulationStep } from '../types/pda';
 import { buildPDAFromCanvas } from '../core/PDA';
+import type { TMStep } from '../types/tm';
+import { buildTMFromCanvas } from '../core/TM';
 import { buildAndSimulate, fastRun } from './simulationAdapter';
 import { completeDFA } from '../core/trapStateGenerator';
 import { parseJFF } from '../core/io/JFFParser';
@@ -113,6 +115,8 @@ interface AutomataState {
   pdaSteps: PDASimulationStep[] | null;
   /** Index of the selected non-deterministic configuration branch in current PDA step. */
   selectedPdaConfigIndex: number;
+  /** 1-Tape Turing Machine simulation steps with tape ribbon; null for other machines. */
+  tmSteps: TMStep[] | null;
   /** Result of instant fast simulation and trace modal; null when not run. */
   fastRunResult: FastRunResult | null;
   /** Test cases for multiple run batch testing. */
@@ -340,6 +344,7 @@ const SIMULATION_RESET = {
   fastRunResult: null as FastRunResult | null,
   pdaSteps: null as PDASimulationStep[] | null,
   selectedPdaConfigIndex: 0,
+  tmSteps: null as TMStep[] | null,
 } as const;
 
 const INITIAL_STATE: AutomataState = {
@@ -640,6 +645,49 @@ export const useAutomataStore = create<AutomataStore>()(
 
   startSimulation: (input): void => {
     const { nodes, edges, machineType } = get();
+
+    // Check if graph is a Turing Machine
+    const isTmMode =
+      machineType === 'tm' ||
+      edges.some((e) =>
+        e.symbols.some(
+          (s) =>
+            s.includes(';') &&
+            (s.includes(', R') ||
+              s.includes(', L') ||
+              s.includes(', S') ||
+              s.includes(',R') ||
+              s.includes(',L') ||
+              s.includes(',S')),
+        ),
+      );
+
+    if (isTmMode) {
+      const tmResult = buildTMFromCanvas(nodes, edges);
+      if (tmResult.error || !tmResult.tm) {
+        set({
+          ...SIMULATION_RESET,
+          simulationError: tmResult.error ?? 'Invalid Turing Machine graph.',
+        });
+        return;
+      }
+      const sim = tmResult.tm.simulate(input);
+      const allSteps: Set<string>[] = sim.steps.map(
+        (s) => new Set([s.stateId]),
+      );
+      const isAccepted = sim.accepted;
+
+      set({
+        ...SIMULATION_RESET,
+        tmSteps: sim.steps,
+        simulationSteps: allSteps,
+        currentStepIndex: 0,
+        activeNodeIds: allSteps[0] ?? new Set(),
+        simulationAccepted: sim.steps.length === 1 ? isAccepted : null,
+        simulationError: null,
+      });
+      return;
+    }
 
     // Check if graph is a PDA
     const isPdaMode =
