@@ -118,8 +118,8 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 
 ## Phase 14: Pumping Lemma Games & L-Systems 🚀
 
-* [ ] Task 7.1: Regular Pumping Lemma Game Engine ($w = xyz$, Human vs AI)
-* [ ] Task 7.2: Regular Pumping Lemma Interactive Partition Sliders UI
-* [ ] Task 7.3: Context-Free Pumping Lemma Game ($w = uvxyz$) & 5-Way Partition UI
+* [x] Task 7.1: Regular Pumping Lemma Game Engine ($w = xyz$, Human vs AI) — *Completed 2026-11-08*
+* [x] Task 7.2: Regular Pumping Lemma Interactive Partition Sliders UI — *Completed 2026-11-08*
+* [x] Task 7.3: Context-Free Pumping Lemma Game ($w = uvxyz$) & 5-Way Partition UI — *Completed 2026-11-08*
 * [ ] Task 8.1: L-System Rewriting Engine (Axiom, Rules, Stochastic, Depth)
 * [ ] Task 8.2: 2D Turtle Graphics HTML5 Canvas Renderer & Classic Fractal Presets

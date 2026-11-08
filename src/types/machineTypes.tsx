@@ -393,7 +393,7 @@ export const MACHINE_TYPES: MachineTypeDef[] = [
     description: 'Context-free language proof tool',
     icon: <CFPumpingIcon />,
     category: 'analysis',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     type: 'reg-pumping',
@@ -401,7 +401,7 @@ export const MACHINE_TYPES: MachineTypeDef[] = [
     description: 'Regular language proof tool',
     icon: <RegPumpingIcon />,
     category: 'analysis',
-    comingSoon: true,
+    comingSoon: false,
   },
 ];
 
