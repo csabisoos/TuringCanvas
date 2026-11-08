@@ -6,6 +6,7 @@ import type { AutomataNode, AutomataEdge } from '../types/ui';
 import type { FastRunResult } from '../types/simulation';
 import type { TestCase } from '../types/batchTest';
 import { buildAndSimulate, fastRun } from './simulationAdapter';
+import { completeDFA } from '../core/trapStateGenerator';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
 
@@ -203,6 +204,8 @@ interface AutomataActions {
   clearTestCases: () => void;
   runAllTestCases: () => void;
   setBatchModalOpen: (open: boolean) => void;
+  /** Completes an incomplete DFA by adding a trap state and all missing transitions. */
+  completeDFAWithTrap: () => void;
   /**
    * Clears all simulation state back to the "not started" baseline.
    */
@@ -638,6 +641,15 @@ export const useAutomataStore = create<AutomataStore>()(
 
   setBatchModalOpen: (open: boolean): void => {
     set({ isBatchModalOpen: open });
+  },
+
+  completeDFAWithTrap: (): void => {
+    const { nodes, edges } = get();
+    const completed = completeDFA(nodes, edges);
+    set({
+      nodes: completed.nodes,
+      edges: completed.edges,
+    });
   },
 
   openEditor: (type): void => {

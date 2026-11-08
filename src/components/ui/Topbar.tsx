@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
+import { ValidationBadge } from './ValidationBadge';
 
 export function Topbar(): ReactElement {
   const sidebarCollapsed = useAutomataStore((s) => s.sidebarCollapsed);
@@ -62,6 +63,9 @@ export function Topbar(): ReactElement {
 
       {/* Spacer / quick help hint */}
       <div className="flex-1" />
+
+      {/* Automaton Validation Diagnostic */}
+      <ValidationBadge />
     </header>
   );
 }
