@@ -89,9 +89,9 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 
 ## Phase 10: Pushdown Automata (PDA) Module 🚀
 
-* [ ] Task 3.1: Core PDA Domain Model & Invariants (`src/core/PDA.ts`)
-* [ ] Task 3.2: Non-deterministic PDA Simulation Engine (Final state vs Empty stack)
-* [ ] Task 3.3: PDA Canvas Adapter, Multi-field Edge Labels (`a, b; c`) & Animated Stack Visualizer
+* [x] Task 3.1: Core PDA Domain Model & Invariants (`src/core/PDA.ts`) — *Completed 2026-11-08*
+* [x] Task 3.2: Non-deterministic PDA Simulation Engine (Final state vs Empty stack) — *Completed 2026-11-08*
+* [x] Task 3.3: PDA Canvas Adapter, Multi-field Edge Labels (`a, b; c`) & Animated Stack Visualizer — *Completed 2026-11-08*
 * [ ] Task 3.4: PDA $\leftrightarrow$ Context-Free Grammar (CFG) Conversions
 
 ## Phase 11: Turing Machines (TM) Module 🚀

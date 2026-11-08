@@ -5,6 +5,8 @@ import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
 import type { FastRunResult } from '../types/simulation';
 import type { TestCase } from '../types/batchTest';
+import type { PDASimulationStep } from '../types/pda';
+import { buildPDAFromCanvas } from '../core/PDA';
 import { buildAndSimulate, fastRun } from './simulationAdapter';
 import { completeDFA } from '../core/trapStateGenerator';
 import { parseJFF } from '../core/io/JFFParser';
@@ -107,6 +109,10 @@ interface AutomataState {
   simulationError: string | null;
   /** Set to true/false after the last step is reached; null while in-progress. */
   simulationAccepted: boolean | null;
+  /** Pushdown Automata simulation steps with stack contents; null for standard FA. */
+  pdaSteps: PDASimulationStep[] | null;
+  /** Index of the selected non-deterministic configuration branch in current PDA step. */
+  selectedPdaConfigIndex: number;
   /** Result of instant fast simulation and trace modal; null when not run. */
   fastRunResult: FastRunResult | null;
   /** Test cases for multiple run batch testing. */
@@ -218,6 +224,10 @@ interface AutomataActions {
    */
   jumpToStep: (stepIndex: number) => void;
   /**
+   * Sets the active configuration branch index for PDA simulation.
+   */
+  setSelectedPdaConfigIndex: (index: number) => void;
+  /**
    * Runs an instant fast simulation on the input string and records the execution trace.
    */
   runFastSimulation: (input: string) => void;
@@ -328,6 +338,8 @@ const SIMULATION_RESET = {
   simulationError: null,
   simulationAccepted: null,
   fastRunResult: null as FastRunResult | null,
+  pdaSteps: null as PDASimulationStep[] | null,
+  selectedPdaConfigIndex: 0,
 } as const;
 
 const INITIAL_STATE: AutomataState = {
@@ -627,7 +639,41 @@ export const useAutomataStore = create<AutomataStore>()(
   // ── Simulation actions ──────────────────────────────────────────────────
 
   startSimulation: (input): void => {
-    const { nodes, edges } = get();
+    const { nodes, edges, machineType } = get();
+
+    // Check if graph is a PDA
+    const isPdaMode =
+      machineType === 'pda' ||
+      edges.some((e) => e.symbols.some((s) => s.includes(';')));
+
+    if (isPdaMode) {
+      const pdaResult = buildPDAFromCanvas(nodes, edges);
+      if (pdaResult.error || !pdaResult.pda) {
+        set({
+          ...SIMULATION_RESET,
+          simulationError: pdaResult.error ?? 'Invalid PDA graph.',
+        });
+        return;
+      }
+      const steps = pdaResult.pda.getSimulationSteps(input);
+      const allSteps: Set<string>[] = steps.map(
+        (s) => new Set(s.configurations.map((c) => c.stateId)),
+      );
+      const lastStep = steps[steps.length - 1];
+      const isAccepted = lastStep.accepted;
+
+      set({
+        ...SIMULATION_RESET,
+        pdaSteps: steps,
+        selectedPdaConfigIndex: 0,
+        simulationSteps: allSteps,
+        currentStepIndex: 0,
+        activeNodeIds: allSteps[0] ?? new Set(),
+        simulationAccepted: steps.length === 1 ? isAccepted : null,
+        simulationError: null,
+      });
+      return;
+    }
 
     // Always reset before a new run.
     const result = buildAndSimulate(nodes, edges, input);
@@ -712,7 +758,12 @@ export const useAutomataStore = create<AutomataStore>()(
       currentStepIndex: stepIndex,
       activeNodeIds: new Set(active),
       simulationAccepted: accepted,
+      selectedPdaConfigIndex: 0,
     });
+  },
+
+  setSelectedPdaConfigIndex: (index: number): void => {
+    set({ selectedPdaConfigIndex: index });
   },
 
   resetSimulation: (): void => { set(SIMULATION_RESET); },

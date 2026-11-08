@@ -127,7 +127,7 @@ function EdgeInput({ initialValue, onCommit, onCancel }: EdgeInputProps): ReactE
       onPointerDown={(e) => { e.stopPropagation(); }}
       onTouchStart={(e) => { e.stopPropagation(); }}
       onClick={(e) => { e.stopPropagation(); }}
-      className="w-20 text-center text-xs bg-indigo-950 border border-indigo-400 text-indigo-100 outline-none rounded px-1 py-0.5 focus:ring-1 focus:ring-indigo-400"
+      className="min-w-24 max-w-48 text-center text-xs bg-indigo-950 border border-indigo-400 text-indigo-100 outline-none rounded px-2 py-0.5 focus:ring-1 focus:ring-indigo-400"
     />
   );
 }
@@ -185,7 +185,14 @@ export function EditableEdge({
   const [isEditing, setIsEditing] = useState(false);
 
   const handleCommit = useCallback((rawValue: string) => {
-    const symbols = rawValue.split(',').map((s) => s.trim()).filter(Boolean);
+    let symbols: string[];
+    if (rawValue.includes(';')) {
+      // PDA/TM transitions: separate multiple rules by newline or pipe
+      const lines = rawValue.split(/[\n|]/).map((s) => s.trim()).filter(Boolean);
+      symbols = lines.length > 0 ? lines : [rawValue.trim()];
+    } else {
+      symbols = rawValue.split(',').map((s) => s.trim()).filter(Boolean);
+    }
     const finalSymbols = symbols.length > 0 ? symbols : ['ε'];
     updateEdgeSymbols(id, finalSymbols);
     setIsEditing(false);
@@ -200,7 +207,9 @@ export function EditableEdge({
     setIsEditing(true);
   }, []);
 
-  const displayLabel = storeSymbols.join(', ');
+  const displayLabel = storeSymbols.some((s) => s.includes(';'))
+    ? storeSymbols.join(' | ')
+    : storeSymbols.join(', ');
 
   return (
     <>
