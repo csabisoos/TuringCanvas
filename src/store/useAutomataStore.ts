@@ -9,6 +9,7 @@ import { buildAndSimulate, fastRun } from './simulationAdapter';
 import { completeDFA } from '../core/trapStateGenerator';
 import { parseJFF } from '../core/io/JFFParser';
 import { serializeJFF } from '../core/io/JFFSerializer';
+import { exportToTikZ } from '../core/io/TikZExporter';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
 
@@ -110,6 +111,10 @@ interface AutomataState {
   testCases: TestCase[];
   /** Whether the batch testing modal is open. */
   isBatchModalOpen: boolean;
+  /** Whether the LaTeX/TikZ export modal is open. */
+  isLatexModalOpen: boolean;
+  /** Generated LaTeX/TikZ code. */
+  latexCode: string;
 
   // ── Preferences ───────────────────────────────────────────────────────────
   preferences: UserPreferences;
@@ -246,6 +251,8 @@ interface AutomataActions {
   exportImage: () => void;
   /** Exports the current automaton as LaTeX/TikZ. */
   exportLaTeX: () => void;
+  /** Closes the LaTeX export modal. */
+  closeLatexModal: () => void;
   /** Imports a JFLAP .jff XML file string into the current workspace. */
   importJFF: (xmlString: string) => void;
   /** Exports the current automaton as a JFLAP .jff XML string. */
@@ -278,6 +285,8 @@ const INITIAL_STATE: AutomataState = {
   preferences: DEFAULT_PREFERENCES,
   testCases: [],
   isBatchModalOpen: false,
+  isLatexModalOpen: false,
+  latexCode: '',
   ...SIMULATION_RESET,
 };
 
@@ -734,8 +743,16 @@ export const useAutomataStore = create<AutomataStore>()(
   },
 
   exportLaTeX: (): void => {
-    // TODO: Implement LaTeX/TikZ export
-    console.warn('exportLaTeX not yet implemented');
+    const { nodes, edges } = get();
+    const code = exportToTikZ(nodes, edges);
+    set({
+      latexCode: code,
+      isLatexModalOpen: true,
+    });
+  },
+
+  closeLatexModal: (): void => {
+    set({ isLatexModalOpen: false });
   },
 
   importJFF: (xmlString: string): void => {
