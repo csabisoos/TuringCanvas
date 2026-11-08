@@ -76,7 +76,7 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [ ] Task 9.3: High-Res PNG & Vector SVG Export
 * [ ] Task 9.4: File System Access API (Open, Save, Save As, Auto-save)
 * [x] Task 10.1: Full Undo / Redo History Stack (Canvas & Store) — *Completed 2026-11-08*
-* [ ] Task 10.2: Automatic Graph Layout (Force-directed, Circular, Hierarchical)
+* [x] Task 10.2: Automatic Graph Layout (Force-directed, Circular, Hierarchical) — *Completed 2026-11-08*
 * [ ] Task 10.3: Canvas Annotations & Sticky Notes
 
 ## Phase 9: Automata Transformations & Conversions 🚀

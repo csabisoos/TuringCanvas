@@ -25,6 +25,7 @@ function EditPanel(): ReactElement {
   const markAccepting = useAutomataStore((s) => s.markAccepting);
   const deleteSelected = useAutomataStore((s) => s.deleteSelected);
   const addTransition  = useAutomataStore((s) => s.addTransition);
+  const applyAutoLayout = useAutomataStore((s) => s.applyAutoLayout);
   const editorTool    = useAutomataStore((s) => s.editorTool);
   const setEditorTool = useAutomataStore((s) => s.setEditorTool);
 
@@ -123,6 +124,39 @@ function EditPanel(): ReactElement {
       >
         Delete Selected
       </SidebarButton>
+
+      <div className="my-1 border-t border-gray-800" />
+
+      <SectionLabel>Auto-Layout</SectionLabel>
+      <div className="grid grid-cols-3 gap-1">
+        <button
+          type="button"
+          onClick={() => { applyAutoLayout('circular'); }}
+          disabled={nodes.length <= 1}
+          className="px-2 py-1.5 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-xs text-gray-200 transition-colors text-center cursor-pointer"
+          title="Circular Layout"
+        >
+          Circle
+        </button>
+        <button
+          type="button"
+          onClick={() => { applyAutoLayout('hierarchical'); }}
+          disabled={nodes.length <= 1}
+          className="px-2 py-1.5 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-xs text-gray-200 transition-colors text-center cursor-pointer"
+          title="Hierarchical Tree Layout"
+        >
+          Tree
+        </button>
+        <button
+          type="button"
+          onClick={() => { applyAutoLayout('force'); }}
+          disabled={nodes.length <= 1}
+          className="px-2 py-1.5 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-xs text-gray-200 transition-colors text-center cursor-pointer"
+          title="Force-Directed Spring Layout"
+        >
+          Spring
+        </button>
+      </div>
 
       <div className="my-1 border-t border-gray-800" />
 

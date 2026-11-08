@@ -10,6 +10,8 @@ import { completeDFA } from '../core/trapStateGenerator';
 import { parseJFF } from '../core/io/JFFParser';
 import { serializeJFF } from '../core/io/JFFSerializer';
 import { exportToTikZ } from '../core/io/TikZExporter';
+import { autoLayout } from '../core/layout/graphLayout';
+import type { LayoutAlgorithm } from '../core/layout/graphLayout';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
 
@@ -225,6 +227,8 @@ interface AutomataActions {
   setBatchModalOpen: (open: boolean) => void;
   /** Completes an incomplete DFA by adding a trap state and all missing transitions. */
   completeDFAWithTrap: () => void;
+  /** Automatically arranges nodes on the canvas according to the given algorithm. */
+  applyAutoLayout: (algorithm: LayoutAlgorithm) => void;
   /**
    * Clears all simulation state back to the "not started" baseline.
    */
@@ -777,6 +781,17 @@ export const useAutomataStore = create<AutomataStore>()(
       future: [],
       nodes: completed.nodes,
       edges: completed.edges,
+    });
+  },
+
+  applyAutoLayout: (algorithm): void => {
+    const { nodes, edges, past } = get();
+    if (nodes.length <= 1) return;
+    const laidOutNodes = autoLayout(nodes, edges, algorithm);
+    set({
+      past: recordPast(past, nodes, edges),
+      future: [],
+      nodes: laidOutNodes,
     });
   },
 
