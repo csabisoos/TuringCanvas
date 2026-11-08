@@ -9,6 +9,7 @@ import { BatchTestModal } from '../simulation/BatchTestModal';
 import { ExportLatexModal } from '../io/ExportLatexModal';
 import { NfaToDfaModal } from '../conversions/NfaToDfaModal';
 import { DfaMinimizationModal } from '../conversions/DfaMinimizationModal';
+import { StateEliminationModal } from '../conversions/StateEliminationModal';
 
 export function EditorView(): ReactNode {
   const editorMode = useAutomataStore((s) => s.editorMode);
@@ -31,6 +32,7 @@ export function EditorView(): ReactNode {
           <ExportLatexModal />
           <NfaToDfaModal />
           <DfaMinimizationModal />
+          <StateEliminationModal />
 
           {/* Mode toggle at bottom of canvas area */}
           <div className="border-t border-gray-800 bg-gray-900 p-3 flex items-center justify-end">
