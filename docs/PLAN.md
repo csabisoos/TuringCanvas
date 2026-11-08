@@ -79,13 +79,13 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] Task 10.2: Automatic Graph Layout (Force-directed, Circular, Hierarchical) — *Completed 2026-11-08*
 * [ ] Task 10.3: Canvas Annotations & Sticky Notes
 
-## Phase 9: Automata Transformations & Conversions 🚀
+## Phase 9: Automata Transformations & Conversions ✅ — *Completed 2026-11-08*
 
 * [x] Task 2.1: Interactive NFA to DFA Powerset Construction Wizard — *Completed 2026-11-08*
 * [x] Task 2.2: DFA Minimization (Hopcroft Equivalence Partitioning & Distinguishable Table) — *Completed 2026-11-08*
 * [x] Task 2.3: DFA/NFA to Regular Expression via State Elimination (GNFA) — *Completed 2026-11-08*
 * [x] Task 2.4: Regular Expression to NFA via Thompson's Construction — *Completed 2026-11-08*
-* [ ] Task 2.5: Automata Equivalence & Isomorphism Checker (with Counterexample)
+* [x] Task 2.5: Automata Equivalence & Isomorphism Checker (with Counterexample) — *Completed 2026-11-08*
 
 ## Phase 10: Pushdown Automata (PDA) Module 🚀
 

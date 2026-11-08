@@ -29,6 +29,7 @@ function EditPanel(): ReactElement {
   const setNfaToDfaModalOpen = useAutomataStore((s) => s.setNfaToDfaModalOpen);
   const setMinimizationModalOpen = useAutomataStore((s) => s.setMinimizationModalOpen);
   const setGnfaModalOpen = useAutomataStore((s) => s.setGnfaModalOpen);
+  const setCompareModalOpen = useAutomataStore((s) => s.setCompareModalOpen);
   const setContentView = useAutomataStore((s) => s.setContentView);
   const editorTool    = useAutomataStore((s) => s.editorTool);
   const setEditorTool = useAutomataStore((s) => s.setEditorTool);
@@ -199,6 +200,15 @@ function EditPanel(): ReactElement {
         onClick={() => { setContentView('regex'); }}
       >
         RegEx → NFA
+      </SidebarButton>
+      <SidebarButton
+        id="sidebar-compare-automata-btn"
+        icon={<ConvertIcon />}
+        aria-label="Open Automata Equivalence & Comparison tool"
+        onClick={() => { setCompareModalOpen(true); }}
+        disabled={isEmpty}
+      >
+        Equivalence Checker
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
