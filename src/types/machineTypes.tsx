@@ -384,7 +384,6 @@ export const MACHINE_TYPES: MachineTypeDef[] = [
     description: 'Regex to NFA/DFA conversion',
     icon: <RegexIcon />,
     category: 'formal-languages',
-    comingSoon: true,
   },
 
   // ── ANALYSIS TOOLS ────────────────────────────────────────────────────────

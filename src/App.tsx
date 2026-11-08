@@ -6,6 +6,7 @@ import { Dashboard } from './components/views/Dashboard';
 import { EditorView } from './components/views/EditorView';
 import { SettingsView } from './components/views/SettingsView';
 import { HelpView } from './components/views/HelpView';
+import { RegexEditorView } from './components/views/RegexEditorView';
 
 function App(): ReactElement {
   const contentView = useAutomataStore((s) => s.contentView);
@@ -16,6 +17,7 @@ function App(): ReactElement {
     editor: EditorView,
     settings: SettingsView,
     help: HelpView,
+    regex: RegexEditorView,
   };
 
   const ViewComponent = viewComponents[contentView] ?? viewComponents.dashboard;

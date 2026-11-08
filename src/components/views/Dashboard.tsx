@@ -10,6 +10,7 @@ const CATEGORIES_ORDER: ('automata' | 'machines' | 'formal-languages' | 'analysi
 ];
 
 export function Dashboard(): ReactNode {
+  const openEditor = useAutomataStore((s) => s.openEditor);
   const setContentView = useAutomataStore((s) => s.setContentView);
 
   return (
@@ -57,7 +58,7 @@ export function Dashboard(): ReactNode {
                       title={t.title}
                       description={t.description}
                       icon={t.icon}
-                      onClick={() => { setContentView('editor'); }}
+                      onClick={() => { openEditor(t.type); }}
                     />
                   ))}
                 </div>
@@ -75,7 +76,7 @@ export function Dashboard(): ReactNode {
                       title={t.title}
                       description={t.description}
                       icon={t.icon}
-                      onClick={() => { setContentView('editor'); }}
+                      onClick={() => { openEditor(t.type); }}
                       comingSoon
                     />
                   ))}

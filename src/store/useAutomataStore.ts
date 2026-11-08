@@ -22,7 +22,7 @@ interface SerializedGraph {
 
 // ── Store types ───────────────────────────────────────────────────────────────
 
-export type ContentView = 'dashboard' | 'editor' | 'settings' | 'help';
+export type ContentView = 'dashboard' | 'editor' | 'settings' | 'help' | 'regex';
 export type MachineType =
   | 'fa'           // Finite Automaton (DFA/NFA)
   | 'pda'          // Pushdown Automaton
@@ -839,7 +839,11 @@ export const useAutomataStore = create<AutomataStore>()(
   },
 
   openEditor: (type): void => {
-    set({ contentView: 'editor', machineType: type });
+    if (type === 'regex') {
+      set({ contentView: 'regex', machineType: type });
+    } else {
+      set({ contentView: 'editor', machineType: type });
+    }
   },
 
   returnToDashboard: (clearWorkspace = false): void => {

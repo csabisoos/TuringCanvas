@@ -29,6 +29,7 @@ function EditPanel(): ReactElement {
   const setNfaToDfaModalOpen = useAutomataStore((s) => s.setNfaToDfaModalOpen);
   const setMinimizationModalOpen = useAutomataStore((s) => s.setMinimizationModalOpen);
   const setGnfaModalOpen = useAutomataStore((s) => s.setGnfaModalOpen);
+  const setContentView = useAutomataStore((s) => s.setContentView);
   const editorTool    = useAutomataStore((s) => s.editorTool);
   const setEditorTool = useAutomataStore((s) => s.setEditorTool);
 
@@ -190,6 +191,14 @@ function EditPanel(): ReactElement {
         disabled={isEmpty}
       >
         State Elimination (RegEx)
+      </SidebarButton>
+      <SidebarButton
+        id="sidebar-regex-to-nfa-btn"
+        icon={<ConvertIcon />}
+        aria-label="Open Regular Expression to NFA compiler"
+        onClick={() => { setContentView('regex'); }}
+      >
+        RegEx → NFA
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
