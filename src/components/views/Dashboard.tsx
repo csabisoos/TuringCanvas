@@ -1,6 +1,8 @@
-import type { ReactElement, ReactNode } from 'react';
+import { useState, type ReactElement, type ReactNode } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
 import { getMachineTypesByCategory } from '../../types/machineTypes';
+import { getRecentFiles, type RecentFile } from '../../core/io/recentFiles';
+import type { MachineType } from '../../types/machineTypes';
 
 const CATEGORIES_ORDER: ('automata' | 'machines' | 'formal-languages' | 'analysis')[] = [
   'automata',
@@ -12,6 +14,10 @@ const CATEGORIES_ORDER: ('automata' | 'machines' | 'formal-languages' | 'analysi
 export function Dashboard(): ReactNode {
   const openEditor = useAutomataStore((s) => s.openEditor);
   const setContentView = useAutomataStore((s) => s.setContentView);
+  const openFile = useAutomataStore((s) => s.openFile);
+  const deserialize = useAutomataStore((s) => s.deserialize);
+
+  const [recentFiles] = useState<RecentFile[]>(() => getRecentFiles());
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col items-center justify-center px-4 py-12">
@@ -92,11 +98,27 @@ export function Dashboard(): ReactNode {
         {/* Recent Files */}
         <div>
           <h3 className="text-sm font-medium uppercase tracking-wider text-gray-400 mb-2">Recent Files</h3>
-          <div className="space-y-1 text-sm text-gray-500">
-            <span className="line-through text-gray-500/50">even-length-strings.jff</span>
-            <span className="line-through text-gray-500/50">palindrome-checker.jff</span>
-            <span className="line-through text-gray-500/50">dfa-minimization.jff</span>
-          </div>
+          {recentFiles.length > 0 ? (
+            <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
+              {recentFiles.map((rf) => (
+                <div
+                  key={rf.id}
+                  onClick={() => {
+                    deserialize(rf.json);
+                    openEditor((rf.machineType || 'fa') as MachineType);
+                  }}
+                  className="p-2.5 bg-gray-900 hover:bg-gray-800 rounded-lg border border-gray-800 flex items-center justify-between text-xs cursor-pointer transition-colors"
+                >
+                  <span className="text-white font-medium">{rf.name}</span>
+                  <span className="text-gray-400 font-mono text-[11px]">
+                    {rf.nodeCount} states • {new Date(rf.lastModified).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500">No recently saved or opened files yet.</p>
+          )}
         </div>
 
         {/* Quick Actions */}
@@ -112,7 +134,7 @@ export function Dashboard(): ReactNode {
             </button>
             <button
               type="button"
-              onClick={() => { setContentView('editor'); }}
+              onClick={() => { void openFile(); }}
               className="px-4 py-2 rounded-md bg-gray-800 text-gray-300 font-medium text-sm hover:bg-gray-700 transition-colors"
             >
               Open

@@ -9,6 +9,9 @@ export function Topbar(): ReactElement {
   const redo = useAutomataStore((s) => s.redo);
   const canUndo = useAutomataStore((s) => s.past.length > 0);
   const canRedo = useAutomataStore((s) => s.future.length > 0);
+  const openFile = useAutomataStore((s) => s.openFile);
+  const saveFile = useAutomataStore((s) => s.saveFile);
+  const exportImage = useAutomataStore((s) => s.exportImage);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent): void {
@@ -120,6 +123,43 @@ export function Topbar(): ReactElement {
             <path d="M21 7v6h-6" />
             <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7" />
           </svg>
+        </button>
+      </div>
+
+      {/* File & Export quick actions */}
+      <div className="flex items-center gap-1.5 ml-3 border-l border-gray-800 pl-3">
+        <button
+          type="button"
+          onClick={() => { void openFile(); }}
+          className="px-2 py-1 text-xs rounded text-gray-300 hover:text-white hover:bg-gray-800 transition-colors cursor-pointer"
+          title="Open File (.json, .jff)"
+        >
+          Open
+        </button>
+        <button
+          type="button"
+          onClick={() => { void saveFile(); }}
+          className="px-2 py-1 text-xs rounded text-gray-300 hover:text-white hover:bg-gray-800 transition-colors cursor-pointer"
+          title="Save File (.json)"
+        >
+          Save
+        </button>
+        <div className="w-px h-4 bg-gray-800 mx-0.5" />
+        <button
+          type="button"
+          onClick={() => { exportImage('png'); }}
+          className="px-2 py-1 text-xs rounded text-indigo-400 hover:text-indigo-300 hover:bg-gray-800 transition-colors cursor-pointer"
+          title="Export high-res PNG"
+        >
+          PNG
+        </button>
+        <button
+          type="button"
+          onClick={() => { exportImage('svg'); }}
+          className="px-2 py-1 text-xs rounded text-indigo-400 hover:text-indigo-300 hover:bg-gray-800 transition-colors cursor-pointer"
+          title="Export vector SVG"
+        >
+          SVG
         </button>
       </div>
 

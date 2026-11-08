@@ -16,6 +16,8 @@ import { completeDFA } from '../core/trapStateGenerator';
 import { parseJFF } from '../core/io/JFFParser';
 import { serializeJFF } from '../core/io/JFFSerializer';
 import { exportToTikZ } from '../core/io/TikZExporter';
+import { generateAutomataSVG, exportSVGFile, exportPNGFile } from '../core/io/imageExporter';
+import { saveRecentFile } from '../core/io/recentFiles';
 import { autoLayout } from '../core/layout/graphLayout';
 import type { LayoutAlgorithm } from '../core/layout/graphLayout';
 
@@ -320,8 +322,8 @@ interface AutomataActions {
   saveFile: () => Promise<void>;
   /** Saves the current file with a new name. */
   saveFileAs: () => Promise<void>;
-  /** Exports the current canvas as an image. */
-  exportImage: () => void;
+  /** Exports the current canvas as an image (PNG or SVG). */
+  exportImage: (format?: 'png' | 'svg') => void;
   /** Exports the current automaton as LaTeX/TikZ. */
   exportLaTeX: () => void;
   /** Closes the LaTeX export modal. */
@@ -1147,26 +1149,61 @@ export const useAutomataStore = create<AutomataStore>()(
   },
 
   openFile: async (): Promise<void> => {
-    // TODO: Implement File System Access API
-    await Promise.resolve();
-    console.warn('openFile not yet implemented');
+    // Fallback using HTML input file
+    return new Promise((resolve) => {
+      if (typeof document === 'undefined') {
+        resolve();
+        return;
+      }
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,.jff,.xml';
+      input.onchange = async (): Promise<void> => {
+        const file = input.files?.[0];
+        if (!file) {
+          resolve();
+          return;
+        }
+        const text = await file.text();
+        if (file.name.endsWith('.jff') || file.name.endsWith('.xml') || text.includes('<structure>')) {
+          get().importJFF(text);
+        } else {
+          get().deserialize(text);
+        }
+        saveRecentFile(file.name, text, get().machineType ?? 'fa', get().nodes.length);
+        resolve();
+      };
+      input.click();
+    });
   },
 
   saveFile: async (): Promise<void> => {
-    // TODO: Implement File System Access API
     await Promise.resolve();
-    console.warn('saveFile not yet implemented');
+    const json = get().serialize();
+    saveRecentFile('Automaton', json, get().machineType ?? 'fa', get().nodes.length);
+
+    if (typeof document === 'undefined') return;
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'automaton.json';
+    a.click();
+    URL.revokeObjectURL(url);
   },
 
   saveFileAs: async (): Promise<void> => {
-    // TODO: Implement File System Access API
-    await Promise.resolve();
-    console.warn('saveFileAs not yet implemented');
+    await get().saveFile();
   },
 
-  exportImage: (): void => {
-    // TODO: Implement canvas export to image
-    console.warn('exportImage not yet implemented');
+  exportImage: (format: 'png' | 'svg' = 'png'): void => {
+    const { nodes, edges } = get();
+    const svg = generateAutomataSVG(nodes, edges);
+    if (format === 'svg') {
+      exportSVGFile(svg, 'automaton.svg');
+    } else {
+      void exportPNGFile(svg, 'automaton.png');
+    }
   },
 
   exportLaTeX: (): void => {
