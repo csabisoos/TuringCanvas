@@ -171,7 +171,7 @@ export function NfaToDfaModal(): ReactElement | null {
             {/* Split content: Transition Table */}
             <div className="flex-1 overflow-y-auto p-5">
               <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
-                Powerset Transition Table ($\delta_{DFA}$)
+                Powerset Transition Table (δ_DFA)
               </h3>
               <table className="w-full text-left text-xs border-collapse">
                 <thead>

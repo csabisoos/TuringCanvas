@@ -28,7 +28,15 @@ interface SerializedGraph {
 
 // ── Store types ───────────────────────────────────────────────────────────────
 
-export type ContentView = 'dashboard' | 'editor' | 'settings' | 'help' | 'regex';
+export type ContentView =
+  | 'dashboard'
+  | 'editor'
+  | 'settings'
+  | 'help'
+  | 'regex'
+  | 'grammar'
+  | 'pumping'
+  | 'lsystem';
 export type MachineType =
   | 'fa'           // Finite Automaton (DFA/NFA)
   | 'pda'          // Pushdown Automaton
@@ -1053,6 +1061,12 @@ export const useAutomataStore = create<AutomataStore>()(
   openEditor: (type): void => {
     if (type === 'regex') {
       set({ contentView: 'regex', machineType: type });
+    } else if (type === 'grammar') {
+      set({ contentView: 'grammar', machineType: type });
+    } else if (type === 'l-system') {
+      set({ contentView: 'lsystem', machineType: type });
+    } else if (type === 'reg-pumping' || type === 'cfg-pumping') {
+      set({ contentView: 'pumping', machineType: type });
     } else {
       set({ contentView: 'editor', machineType: type });
     }

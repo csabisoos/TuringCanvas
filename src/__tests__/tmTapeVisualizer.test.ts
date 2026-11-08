@@ -21,14 +21,14 @@ describe('Turing Machine Tape Visualizer logic (Task 4.2)', () => {
     expect(step0.headPosition).toBe(0);
     const center0 = step0.visibleTape.find((c) => c.index === 0);
     expect(center0).toBeDefined();
-    expect(center0.symbol).toBe('1');
+    expect(center0?.symbol).toBe('1');
 
     const step3 = result.steps[3];
     expect(step3).toBeDefined();
     expect(step3.headPosition).toBe(3);
     const center3 = step3.visibleTape.find((c) => c.index === 3);
     expect(center3).toBeDefined();
-    expect(center3.symbol).toBe('□');
+    expect(center3?.symbol).toBe('□');
   });
 
   it('handles negative head positions into left infinity', () => {
@@ -45,6 +45,6 @@ describe('Turing Machine Tape Visualizer logic (Task 4.2)', () => {
     expect(finalStep.headPosition).toBe(-1);
     const negCell = finalStep.visibleTape.find((c) => c.index === -1);
     expect(negCell).toBeDefined();
-    expect(negCell.symbol).toBe('□');
+    expect(negCell?.symbol).toBe('□');
   });
 });

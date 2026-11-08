@@ -107,14 +107,14 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] Task 5.2: Transducer Canvas Adapters, Output Labels & Synchronous Output Stream Ribbon — *Completed 2026-11-08*
 * [x] Task 5.3: Bidirectional Mealy $\leftrightarrow$ Moore Conversions — *Completed 2026-11-08*
 
-## Phase 13: Formal Grammars & Parsing (CFG Suite) 🚀
+## Phase 13: Formal Grammars & Parsing (CFG Suite) ✅ — *Completed 2026-11-08*
 
-* [ ] Task 6.1: Formal Grammar Core Types & Chomsky Hierarchy Parser (`src/core/grammar/`)
-* [ ] Task 6.2: CFG Simplification Pipeline ($\lambda$, Unit, Useless Removal & CNF/GNF)
-* [ ] Task 6.3: CYK Parsing Algorithm & Triangular Dynamic Programming Table UI
-* [ ] Task 6.4: LL(1) Parsing Suite (FIRST/FOLLOW Sets, Parse Table & Stack Stepper)
-* [ ] Task 6.5: SLR(1) / LR(1) Parsing Suite (Item Sets DFA, Action/Goto Tables)
-* [ ] Task 6.6: Interactive SVG Derivation Tree / Parse Tree Visualizer
+* [x] Task 6.1: Formal Grammar Core Types & Chomsky Hierarchy Parser (`src/core/grammar/`) — *Completed 2026-11-08*
+* [x] Task 6.2: CFG Simplification Pipeline ($\lambda$, Unit, Useless Removal & CNF/GNF) — *Completed 2026-11-08*
+* [x] Task 6.3: CYK Parsing Algorithm & Triangular Dynamic Programming Table UI — *Completed 2026-11-08*
+* [x] Task 6.4: LL(1) Parsing Suite (FIRST/FOLLOW Sets, Parse Table & Stack Stepper) — *Completed 2026-11-08*
+* [x] Task 6.5: SLR(1) / LR(1) Parsing Suite (Item Sets DFA, Action/Goto Tables) — *Completed 2026-11-08*
+* [x] Task 6.6: Interactive SVG Derivation Tree / Parse Tree Visualizer — *Completed 2026-11-08*
 
 ## Phase 14: Pumping Lemma Games & L-Systems 🚀
 

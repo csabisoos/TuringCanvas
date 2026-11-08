@@ -7,6 +7,7 @@ import { EditorView } from './components/views/EditorView';
 import { SettingsView } from './components/views/SettingsView';
 import { HelpView } from './components/views/HelpView';
 import { RegexEditorView } from './components/views/RegexEditorView';
+import { GrammarEditorView } from './components/views/GrammarEditorView';
 
 function App(): ReactElement {
   const contentView = useAutomataStore((s) => s.contentView);
@@ -18,6 +19,7 @@ function App(): ReactElement {
     settings: SettingsView,
     help: HelpView,
     regex: RegexEditorView,
+    grammar: GrammarEditorView,
   };
 
   const ViewComponent = viewComponents[contentView] ?? viewComponents.dashboard;

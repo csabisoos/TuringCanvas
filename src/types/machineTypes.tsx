@@ -368,7 +368,7 @@ export const MACHINE_TYPES: MachineTypeDef[] = [
     description: 'Context-free grammar editor',
     icon: <GrammarIcon />,
     category: 'formal-languages',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     type: 'l-system',
