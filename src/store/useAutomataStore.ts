@@ -115,6 +115,10 @@ interface AutomataState {
   isLatexModalOpen: boolean;
   /** Generated LaTeX/TikZ code. */
   latexCode: string;
+  /** Undo history stack. */
+  past: { nodes: AutomataNode[]; edges: AutomataEdge[] }[];
+  /** Redo history stack. */
+  future: { nodes: AutomataNode[]; edges: AutomataEdge[] }[];
 
   // ── Preferences ───────────────────────────────────────────────────────────
   preferences: UserPreferences;
@@ -142,6 +146,14 @@ interface AutomataActions {
   /** Removes all currently selected nodes and edges from the store, then clears selection. */
   deleteSelected: (nodeIds: string[], edgeIds: string[]) => void;
   clearStore: () => void;
+  /** Reverts the last graph action. */
+  undo: () => void;
+  /** Re-applies the next undone graph action. */
+  redo: () => void;
+  /** Whether an undo operation is available. */
+  canUndo: () => boolean;
+  /** Whether a redo operation is available. */
+  canRedo: () => boolean;
   /** Switches the editor between 'edit' and 'simulate' modes. */
   setEditorMode: (mode: EditorMode) => void;
   /** Switches the canvas interaction tool between 'select' and 'connect'. */
@@ -263,6 +275,30 @@ type AutomataStore = AutomataState & AutomataActions;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+const MAX_HISTORY = 50;
+
+function snapshot(
+  nodes: AutomataNode[],
+  edges: AutomataEdge[],
+): { nodes: AutomataNode[]; edges: AutomataEdge[] } {
+  return {
+    nodes: nodes.map((n) => ({ ...n, position: { ...n.position } })),
+    edges: edges.map((e) => ({ ...e, symbols: [...e.symbols] })),
+  };
+}
+
+function recordPast(
+  past: { nodes: AutomataNode[]; edges: AutomataEdge[] }[],
+  nodes: AutomataNode[],
+  edges: AutomataEdge[],
+): { nodes: AutomataNode[]; edges: AutomataEdge[] }[] {
+  const newPast = [...past, snapshot(nodes, edges)];
+  if (newPast.length > MAX_HISTORY) {
+    newPast.shift();
+  }
+  return newPast;
+}
+
 const SIMULATION_RESET = {
   activeNodeIds: new Set<string>(),
   simulationSteps: [] as Set<string>[],
@@ -287,6 +323,8 @@ const INITIAL_STATE: AutomataState = {
   isBatchModalOpen: false,
   isLatexModalOpen: false,
   latexCode: '',
+  past: [],
+  future: [],
   ...SIMULATION_RESET,
 };
 
@@ -321,66 +359,139 @@ export const useAutomataStore = create<AutomataStore>()(
     (set, get) => ({
       ...INITIAL_STATE,
       addNode: (node): void => {
-    set((state) => ({ nodes: [...state.nodes, node] }));
-  },
+        set((state) => ({
+          past: recordPast(state.past, state.nodes, state.edges),
+          future: [],
+          nodes: [...state.nodes, node],
+        }));
+      },
 
-  updateNodeLabel: (nodeId, label): void => {
-    set((state) => ({
-      nodes: state.nodes.map((n) => n.id === nodeId ? { ...n, label } : n),
-    }));
-  },
+      updateNodeLabel: (nodeId, label): void => {
+        set((state) => ({
+          past: recordPast(state.past, state.nodes, state.edges),
+          future: [],
+          nodes: state.nodes.map((n) => n.id === nodeId ? { ...n, label } : n),
+        }));
+      },
 
-  addEdge: (edge): void => {
-    set((state) => ({ edges: [...state.edges, edge] }));
-  },
+      addEdge: (edge): void => {
+        set((state) => ({
+          past: recordPast(state.past, state.nodes, state.edges),
+          future: [],
+          edges: [...state.edges, edge],
+        }));
+      },
 
-  addTransition: (source, target): void => {
-    set((state) => ({
-      edges: [
-        ...state.edges,
-        { id: crypto.randomUUID(), source, target, symbols: ['ε'] },
-      ],
-    }));
-  },
+      addTransition: (source, target): void => {
+        set((state) => ({
+          past: recordPast(state.past, state.nodes, state.edges),
+          future: [],
+          edges: [
+            ...state.edges,
+            { id: crypto.randomUUID(), source, target, symbols: ['ε'] },
+          ],
+        }));
+      },
 
-  updateEdgeSymbols: (edgeId, symbols): void => {
-    set((state) => ({
-      edges: state.edges.map((e) =>
-        e.id === edgeId ? { ...e, symbols } : e,
-      ),
-    }));
-  },
+      updateEdgeSymbols: (edgeId, symbols): void => {
+        set((state) => ({
+          past: recordPast(state.past, state.nodes, state.edges),
+          future: [],
+          edges: state.edges.map((e) =>
+            e.id === edgeId ? { ...e, symbols } : e,
+          ),
+        }));
+      },
 
-  markInitial: (id): void => {
-    set((state) => ({
-      nodes: state.nodes.map((n) => ({ ...n, isInitial: n.id === id })),
-    }));
-  },
+      markInitial: (id): void => {
+        set((state) => ({
+          past: recordPast(state.past, state.nodes, state.edges),
+          future: [],
+          nodes: state.nodes.map((n) => ({ ...n, isInitial: n.id === id })),
+        }));
+      },
 
-  markAccepting: (id): void => {
-    set((state) => ({
-      nodes: state.nodes.map((n) =>
-        n.id === id ? { ...n, isAccepting: !n.isAccepting } : n,
-      ),
-    }));
-  },
+      markAccepting: (id): void => {
+        set((state) => ({
+          past: recordPast(state.past, state.nodes, state.edges),
+          future: [],
+          nodes: state.nodes.map((n) =>
+            n.id === id ? { ...n, isAccepting: !n.isAccepting } : n,
+          ),
+        }));
+      },
 
-  setSelectedElements: (nodeIds, edgeIds): void => {
-    set({ selectedNodeIds: nodeIds, selectedEdgeIds: edgeIds });
-  },
+      setSelectedElements: (nodeIds, edgeIds): void => {
+        set({ selectedNodeIds: nodeIds, selectedEdgeIds: edgeIds });
+      },
 
-  deleteSelected: (nodeIds, edgeIds): void => {
-    const nodeSet = new Set(nodeIds);
-    const edgeSet = new Set(edgeIds);
-    set((state) => ({
-      nodes: state.nodes.filter((n) => !nodeSet.has(n.id)),
-      edges: state.edges.filter((e) => !edgeSet.has(e.id)),
-      selectedNodeIds: [],
-      selectedEdgeIds: [],
-    }));
-  },
+      deleteSelected: (nodeIds, edgeIds): void => {
+        if (nodeIds.length === 0 && edgeIds.length === 0) return;
+        const nodeSet = new Set(nodeIds);
+        const edgeSet = new Set(edgeIds);
+        set((state) => ({
+          past: recordPast(state.past, state.nodes, state.edges),
+          future: [],
+          nodes: state.nodes.filter((n) => !nodeSet.has(n.id)),
+          edges: state.edges.filter((e) => !edgeSet.has(e.id)),
+          selectedNodeIds: [],
+          selectedEdgeIds: [],
+        }));
+      },
 
-  clearStore: (): void => { set(INITIAL_STATE); },
+      clearStore: (): void => {
+        set({
+          ...INITIAL_STATE,
+          past: [],
+          future: [],
+        });
+      },
+
+      undo: (): void => {
+        const { past, future, nodes, edges } = get();
+        if (past.length === 0) return;
+
+        const previous = past[past.length - 1];
+        const newPast = past.slice(0, -1);
+        const newFuture = [snapshot(nodes, edges), ...future];
+
+        set({
+          past: newPast,
+          future: newFuture,
+          nodes: previous.nodes,
+          edges: previous.edges,
+          selectedNodeIds: [],
+          selectedEdgeIds: [],
+          ...SIMULATION_RESET,
+        });
+      },
+
+      redo: (): void => {
+        const { past, future, nodes, edges } = get();
+        if (future.length === 0) return;
+
+        const next = future[0];
+        const newFuture = future.slice(1);
+        const newPast = [...past, snapshot(nodes, edges)];
+
+        set({
+          past: newPast,
+          future: newFuture,
+          nodes: next.nodes,
+          edges: next.edges,
+          selectedNodeIds: [],
+          selectedEdgeIds: [],
+          ...SIMULATION_RESET,
+        });
+      },
+
+      canUndo: (): boolean => {
+        return get().past.length > 0;
+      },
+
+      canRedo: (): boolean => {
+        return get().future.length > 0;
+      },
 
   setEditorMode: (mode): void => { set({ editorMode: mode }); },
 
@@ -659,9 +770,11 @@ export const useAutomataStore = create<AutomataStore>()(
   },
 
   completeDFAWithTrap: (): void => {
-    const { nodes, edges } = get();
+    const { nodes, edges, past } = get();
     const completed = completeDFA(nodes, edges);
     set({
+      past: recordPast(past, nodes, edges),
+      future: [],
       nodes: completed.nodes,
       edges: completed.edges,
     });
