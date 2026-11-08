@@ -7,6 +7,8 @@ import type { FastRunResult } from '../types/simulation';
 import type { TestCase } from '../types/batchTest';
 import { buildAndSimulate, fastRun } from './simulationAdapter';
 import { completeDFA } from '../core/trapStateGenerator';
+import { parseJFF } from '../core/io/JFFParser';
+import { serializeJFF } from '../core/io/JFFSerializer';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
 
@@ -244,6 +246,10 @@ interface AutomataActions {
   exportImage: () => void;
   /** Exports the current automaton as LaTeX/TikZ. */
   exportLaTeX: () => void;
+  /** Imports a JFLAP .jff XML file string into the current workspace. */
+  importJFF: (xmlString: string) => void;
+  /** Exports the current automaton as a JFLAP .jff XML string. */
+  exportJFF: () => string;
 }
 
 type AutomataStore = AutomataState & AutomataActions;
@@ -730,6 +736,22 @@ export const useAutomataStore = create<AutomataStore>()(
   exportLaTeX: (): void => {
     // TODO: Implement LaTeX/TikZ export
     console.warn('exportLaTeX not yet implemented');
+  },
+
+  importJFF: (xmlString: string): void => {
+    const { nodes, edges } = parseJFF(xmlString);
+    set({
+      nodes,
+      edges,
+      selectedNodeIds: [],
+      selectedEdgeIds: [],
+      ...SIMULATION_RESET,
+    });
+  },
+
+  exportJFF: (): string => {
+    const { nodes, edges } = get();
+    return serializeJFF(nodes, edges);
   },
     }),
     {

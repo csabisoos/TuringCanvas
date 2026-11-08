@@ -279,6 +279,29 @@ describe('useAutomataStore', () => {
     });
   });
 
+  // ─── JFF import / export ──────────────────────────────────────────────────
+
+  describe('importJFF and exportJFF', () => {
+    it('exports the store state to JFF XML and re-imports it', () => {
+      getState().addNode({ id: '0', position: { x: 50, y: 50 }, label: 'q0', isInitial: true, isAccepting: false });
+      getState().addNode({ id: '1', position: { x: 150, y: 50 }, label: 'q1', isInitial: false, isAccepting: true });
+      getState().addEdge({ id: 'e0', source: '0', target: '1', symbols: ['a'] });
+
+      const xml = getState().exportJFF();
+      expect(xml).toContain('<type>fa</type>');
+      expect(xml).toContain('<state id="0" name="q0">');
+
+      getState().clearStore();
+      expect(getState().nodes).toHaveLength(0);
+
+      getState().importJFF(xml);
+      expect(getState().nodes).toHaveLength(2);
+      expect(getState().nodes.find((n) => n.id === '0')?.isInitial).toBe(true);
+      expect(getState().nodes.find((n) => n.id === '1')?.isAccepting).toBe(true);
+      expect(getState().edges[0].symbols).toContain('a');
+    });
+  });
+
   // ─── setSelectedElements ──────────────────────────────────────────────────
 
   describe('setSelectedElements', () => {

@@ -71,7 +71,7 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 
 ## Phase 8: Interoperability, File Formats & Canvas UX 🚀
 
-* [ ] Task 9.1: JFLAP `.jff` XML Parser & Exporter (Full bidirectional compatibility)
+* [x] Task 9.1: JFLAP `.jff` XML Parser & Exporter (Full bidirectional compatibility) — *Completed 2026-11-08*
 * [ ] Task 9.2: LaTeX / TikZ Automata Exporter
 * [ ] Task 9.3: High-Res PNG & Vector SVG Export
 * [ ] Task 9.4: File System Access API (Open, Save, Save As, Auto-save)
