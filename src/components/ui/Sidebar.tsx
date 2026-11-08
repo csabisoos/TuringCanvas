@@ -141,6 +141,7 @@ function SimulatePanel(): ReactElement {
 
   const startSimulation  = useAutomataStore((s) => s.startSimulation);
   const runFastSimulation = useAutomataStore((s) => s.runFastSimulation);
+  const setBatchModalOpen = useAutomataStore((s) => s.setBatchModalOpen);
   const stepForward      = useAutomataStore((s) => s.stepForward);
   const stepBack         = useAutomataStore((s) => s.stepBack);
   const jumpToStep       = useAutomataStore((s) => s.jumpToStep);
@@ -288,6 +289,15 @@ function SimulatePanel(): ReactElement {
         disabled={resetDisabled}
       >
         Reset
+      </SidebarButton>
+      <SidebarButton
+        id="simulate-batch-btn"
+        icon={<TableIcon />}
+        aria-label="Open multiple run batch test table"
+        onClick={() => { setBatchModalOpen(true); }}
+        disabled={!hasNodes}
+      >
+        Multiple Run (Batch)
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
@@ -442,6 +452,15 @@ function FastForwardIcon(): ReactElement {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <polygon points="13 19 22 12 13 5 13 19" />
       <polygon points="2 19 11 12 2 5 2 19" />
+    </svg>
+  );
+}
+
+function TableIcon(): ReactElement {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M3 15h18M9 3v18" />
     </svg>
   );
 }

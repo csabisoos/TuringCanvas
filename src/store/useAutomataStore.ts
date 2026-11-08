@@ -4,6 +4,7 @@ import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
 import type { FastRunResult } from '../types/simulation';
+import type { TestCase } from '../types/batchTest';
 import { buildAndSimulate, fastRun } from './simulationAdapter';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
@@ -102,6 +103,10 @@ interface AutomataState {
   simulationAccepted: boolean | null;
   /** Result of instant fast simulation and trace modal; null when not run. */
   fastRunResult: FastRunResult | null;
+  /** Test cases for multiple run batch testing. */
+  testCases: TestCase[];
+  /** Whether the batch testing modal is open. */
+  isBatchModalOpen: boolean;
 
   // ── Preferences ───────────────────────────────────────────────────────────
   preferences: UserPreferences;
@@ -190,6 +195,14 @@ interface AutomataActions {
    * Clears the fast simulation result.
    */
   clearFastRun: () => void;
+
+  // ── Batch testing actions ──────────────────────────────────────────────────
+  addTestCase: (input: string, expected?: 'accept' | 'reject') => void;
+  removeTestCase: (id: string) => void;
+  updateTestCase: (id: string, updates: Partial<TestCase>) => void;
+  clearTestCases: () => void;
+  runAllTestCases: () => void;
+  setBatchModalOpen: (open: boolean) => void;
   /**
    * Clears all simulation state back to the "not started" baseline.
    */
@@ -254,6 +267,8 @@ const INITIAL_STATE: AutomataState = {
   selectedNodeIds: [],
   selectedEdgeIds: [],
   preferences: DEFAULT_PREFERENCES,
+  testCases: [],
+  isBatchModalOpen: false,
   ...SIMULATION_RESET,
 };
 
@@ -570,6 +585,59 @@ export const useAutomataStore = create<AutomataStore>()(
 
   clearFastRun: (): void => {
     set({ fastRunResult: null });
+  },
+
+  addTestCase: (input: string, expected?: 'accept' | 'reject'): void => {
+    const id = `tc_${Date.now().toString()}_${Math.random().toString(36).slice(2, 7)}`;
+    set((state) => ({
+      testCases: [...state.testCases, { id, input, expected }],
+    }));
+  },
+
+  removeTestCase: (id: string): void => {
+    set((state) => ({
+      testCases: state.testCases.filter((tc) => tc.id !== id),
+    }));
+  },
+
+  updateTestCase: (id: string, updates: Partial<TestCase>): void => {
+    set((state) => ({
+      testCases: state.testCases.map((tc) => (tc.id === id ? { ...tc, ...updates } : tc)),
+    }));
+  },
+
+  clearTestCases: (): void => {
+    set({ testCases: [] });
+  },
+
+  runAllTestCases: (): void => {
+    const { nodes, edges, testCases } = get();
+    const updated = testCases.map((tc) => {
+      const res = buildAndSimulate(nodes, edges, tc.input);
+      if ('kind' in res) {
+        return {
+          ...tc,
+          actual: 'error' as const,
+          passed: false,
+          errorMessage: res.kind === 'NO_INITIAL_STATE'
+            ? 'Must have exactly one initial state'
+            : 'Simulation error',
+        };
+      }
+      const actual = res.accepted ? ('accept' as const) : ('reject' as const);
+      const passed = tc.expected === undefined || tc.expected === actual;
+      return {
+        ...tc,
+        actual,
+        passed,
+        errorMessage: undefined,
+      };
+    });
+    set({ testCases: updated });
+  },
+
+  setBatchModalOpen: (open: boolean): void => {
+    set({ isBatchModalOpen: open });
   },
 
   openEditor: (type): void => {

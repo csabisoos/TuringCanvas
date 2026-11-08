@@ -5,6 +5,7 @@ import { Topbar } from '../ui/Topbar';
 import { AppSidebar } from '../ui/AppSidebar';
 import { AutomataCanvas } from '../canvas/AutomataCanvas';
 import { FastRunModal } from '../simulation/FastRunModal';
+import { BatchTestModal } from '../simulation/BatchTestModal';
 
 export function EditorView(): ReactNode {
   const editorMode = useAutomataStore((s) => s.editorMode);
@@ -23,6 +24,7 @@ export function EditorView(): ReactNode {
         <main className="flex-1 flex flex-col overflow-hidden">
           <AutomataCanvas />
           <FastRunModal />
+          <BatchTestModal />
 
           {/* Mode toggle at bottom of canvas area */}
           <div className="border-t border-gray-800 bg-gray-900 p-3 flex items-center justify-end">
