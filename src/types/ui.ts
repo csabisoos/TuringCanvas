@@ -20,3 +20,13 @@ export interface AutomataEdge {
   target: string; // AutomataNode id
   symbols: string[];
 }
+
+export type AnnotationColor = 'yellow' | 'blue' | 'green' | 'purple';
+
+export interface CanvasAnnotation {
+  id: string;
+  position: { x: number; y: number };
+  text: string;
+  color?: AnnotationColor;
+  width?: number;
+}

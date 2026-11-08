@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
-import type { AutomataNode, AutomataEdge } from '../types/ui';
+import type { AutomataNode, AutomataEdge, CanvasAnnotation, AnnotationColor } from '../types/ui';
 import type { FastRunResult } from '../types/simulation';
 import type { TestCase } from '../types/batchTest';
 import type { PDASimulationStep } from '../types/pda';
@@ -26,6 +26,7 @@ import type { LayoutAlgorithm } from '../core/layout/graphLayout';
 interface SerializedGraph {
   nodes: AutomataNode[];
   edges: AutomataEdge[];
+  annotations?: CanvasAnnotation[];
 }
 
 // ── Store types ───────────────────────────────────────────────────────────────
@@ -160,6 +161,9 @@ interface AutomataState {
   /** Redo history stack. */
   future: { nodes: AutomataNode[]; edges: AutomataEdge[] }[];
 
+  /** Sticky notes and markdown annotations on the canvas. */
+  annotations: CanvasAnnotation[];
+
   // ── Preferences ───────────────────────────────────────────────────────────
   preferences: UserPreferences;
 }
@@ -286,6 +290,16 @@ interface AutomataActions {
   setCfgPdaModalOpen: (open: boolean) => void;
   /** Sets active highlighted node IDs on the canvas. */
   setActiveNodeIds: (ids: string[]) => void;
+  /** Adds a canvas sticky note annotation. */
+  addAnnotation: (
+    position?: { x: number; y: number },
+    text?: string,
+    color?: AnnotationColor
+  ) => void;
+  /** Updates text, color or position of an existing annotation. */
+  updateAnnotation: (id: string, updates: Partial<CanvasAnnotation>) => void;
+  /** Deletes an annotation from the canvas. */
+  deleteAnnotation: (id: string) => void;
   /** Replaces the current canvas with the converted DFA nodes and edges. */
   applyConvertedDFA: (nodes: AutomataNode[], edges: AutomataEdge[]) => void;
   /**
@@ -399,6 +413,7 @@ const INITIAL_STATE: AutomataState = {
   latexCode: '',
   past: [],
   future: [],
+  annotations: [],
   ...SIMULATION_RESET,
 };
 
@@ -420,9 +435,14 @@ function parseAndValidate(json: string): SerializedGraph {
     throw new TypeError('Deserialization error: "edges" must be an array.');
   }
 
+  const annotations = Array.isArray(obj.annotations)
+    ? (obj.annotations as CanvasAnnotation[])
+    : [];
+
   return {
     nodes: obj.nodes as AutomataNode[],
     edges: obj.edges as AutomataEdge[],
+    annotations,
   };
 }
 
@@ -582,14 +602,17 @@ export const useAutomataStore = create<AutomataStore>()(
   setEditorTool: (tool): void => { set({ editorTool: tool }); },
 
   serialize: (): string => {
-    const { nodes, edges } = get();
+    const { nodes, edges, annotations } = get();
+    if (annotations.length > 0) {
+      return JSON.stringify({ nodes, edges, annotations });
+    }
     return JSON.stringify({ nodes, edges });
   },
 
   deserialize: (json): void => {
     // Validate BEFORE touching the store — guarantees atomicity on error.
-    const { nodes, edges } = parseAndValidate(json);
-    set({ nodes, edges });
+    const { nodes, edges, annotations } = parseAndValidate(json);
+    set({ nodes, edges, annotations });
   },
 
   onNodesChange: (changes): void => {
@@ -1065,6 +1088,35 @@ export const useAutomataStore = create<AutomataStore>()(
     set({ isCfgPdaModalOpen: open });
   },
 
+  addAnnotation: (
+    position = { x: 100, y: 100 },
+    text = '',
+    color: AnnotationColor = 'yellow'
+  ): void => {
+    const newAnn: CanvasAnnotation = {
+      id: `ann-${String(Date.now())}-${Math.random().toString(36).slice(2, 6)}`,
+      position,
+      text,
+      color,
+      width: 200,
+    };
+    set((state) => ({
+      annotations: [...state.annotations, newAnn],
+    }));
+  },
+
+  updateAnnotation: (id, updates): void => {
+    set((state) => ({
+      annotations: state.annotations.map((a) => (a.id === id ? { ...a, ...updates } : a)),
+    }));
+  },
+
+  deleteAnnotation: (id): void => {
+    set((state) => ({
+      annotations: state.annotations.filter((a) => a.id !== id),
+    }));
+  },
+
   setActiveNodeIds: (ids: string[]): void => {
     set({ activeNodeIds: new Set(ids) });
   },
@@ -1143,6 +1195,7 @@ export const useAutomataStore = create<AutomataStore>()(
     set(() => ({
       nodes: [],
       edges: [],
+      annotations: [],
       machineType: null,
       ...SIMULATION_RESET,
     }));

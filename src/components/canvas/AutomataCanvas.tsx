@@ -16,6 +16,7 @@ import '@xyflow/react/dist/style.css';
 import { useAutomataStore } from '../../store/useAutomataStore';
 import { StateNode } from './StateNode';
 import type { StateNodeData } from './StateNode';
+import { AnnotationNode } from './AnnotationNode';
 import { EditableEdge } from './EditableEdge';
 
 // ── Custom node registry ──────────────────────────────────────────────────────
@@ -25,6 +26,7 @@ type AnyNodeProps = NodeProps;
 
 const nodeTypes: NodeTypes = {
   stateNode: StateNode as ComponentType<AnyNodeProps>,
+  annotationNode: AnnotationNode as ComponentType<AnyNodeProps>,
 };
 
 const edgeTypes = {
@@ -96,6 +98,7 @@ function toFlowEdge(edge: {
 export function AutomataCanvas(): ReactElement {
   const storeNodes = useAutomataStore((s) => s.nodes);
   const storeEdges = useAutomataStore((s) => s.edges);
+  const annotations = useAutomataStore((s) => s.annotations);
   const activeNodeIds = useAutomataStore((s) => s.activeNodeIds);
   const onNodesChange = useAutomataStore((s) => s.onNodesChange);
   const onEdgesChange = useAutomataStore((s) => s.onEdgesChange);
@@ -137,10 +140,19 @@ export function AutomataCanvas(): ReactElement {
     [onConnect],
   );
 
-  const flowNodes = useMemo(
-    () => storeNodes.map((n) => toFlowNode(n, activeNodeIds)),
-    [storeNodes, activeNodeIds],
-  );
+  const flowNodes = useMemo(() => {
+    const stateNodes = storeNodes.map((n) => toFlowNode(n, activeNodeIds));
+    const annotationNodes: Node[] = annotations.map((ann) => ({
+      id: ann.id,
+      type: 'annotationNode',
+      position: ann.position,
+      data: {
+        text: ann.text,
+        color: ann.color ?? 'yellow',
+      },
+    }));
+    return [...stateNodes, ...annotationNodes];
+  }, [storeNodes, activeNodeIds, annotations]);
   const flowEdges = useMemo(
     () => storeEdges.map(toFlowEdge),
     [storeEdges],
