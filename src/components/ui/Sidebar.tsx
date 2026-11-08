@@ -2,6 +2,8 @@ import { useState, useEffect, type ReactElement } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
 import { StackVisualizer } from '../pda/StackVisualizer';
 import { TapeVisualizer } from '../tm/TapeVisualizer';
+import { OutputStreamRibbon } from '../transducers/OutputStreamRibbon';
+import { TransducerConversionModal } from '../conversions/TransducerConversionModal';
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function Sidebar(): ReactElement {
@@ -46,6 +48,8 @@ function EditPanel(): ReactElement {
   const canAddTransition  = selectedNodeIds.length === 2;
   const isConnectToolActive = editorTool === 'connect';
 
+  const machineType   = useAutomataStore((s) => s.machineType);
+  const [isTransducerModalOpen, setTransducerModalOpen] = useState(false);
   const isEmpty = nodes.length === 0;
 
   function handleAddTransition(): void {
@@ -212,6 +216,17 @@ function EditPanel(): ReactElement {
       >
         Equivalence Checker
       </SidebarButton>
+      {(machineType === 'mealy' || machineType === 'moore') && (
+        <SidebarButton
+          id="sidebar-transducer-conv-btn"
+          icon={<ConvertIcon />}
+          aria-label="Open Transducer Conversion Modal"
+          onClick={() => { setTransducerModalOpen(true); }}
+          disabled={isEmpty}
+        >
+          {machineType === 'mealy' ? 'Mealy → Moore' : 'Moore → Mealy'}
+        </SidebarButton>
+      )}
 
       <div className="my-1 border-t border-gray-800" />
 
@@ -219,6 +234,11 @@ function EditPanel(): ReactElement {
       <SidebarButton id="sidebar-clear-btn" icon={<TrashIcon />} aria-label="Clear all states and transitions" onClick={clearStore} disabled={isEmpty} danger>
         Clear All
       </SidebarButton>
+
+      <TransducerConversionModal
+        isOpen={isTransducerModalOpen}
+        onClose={() => { setTransducerModalOpen(false); }}
+      />
     </div>
   );
 }
@@ -242,6 +262,7 @@ function SimulatePanel(): ReactElement {
   const machineType = useAutomataStore((s) => s.machineType);
   const pdaSteps = useAutomataStore((s) => s.pdaSteps);
   const tmSteps = useAutomataStore((s) => s.tmSteps);
+  const transducerSteps = useAutomataStore((s) => s.transducerSteps);
   // Disable simulation controls when no automaton has been drawn yet
   const hasNodes = useAutomataStore((s) => s.nodes.length > 0);
 
@@ -424,6 +445,16 @@ function SimulatePanel(): ReactElement {
       {(machineType === 'tm' || tmSteps !== null) && (
         <div className="pt-2">
           <TapeVisualizer />
+        </div>
+      )}
+
+      {(machineType === 'mealy' || machineType === 'moore' || transducerSteps !== null) && (
+        <div className="pt-2">
+          <OutputStreamRibbon
+            steps={transducerSteps ?? []}
+            currentStepIndex={currentStepIndex}
+            machineType={machineType === 'moore' ? 'moore' : 'mealy'}
+          />
         </div>
       )}
     </div>

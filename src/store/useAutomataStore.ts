@@ -9,6 +9,8 @@ import type { PDASimulationStep } from '../types/pda';
 import { buildPDAFromCanvas } from '../core/PDA';
 import type { TMStep } from '../types/tm';
 import { buildTMFromCanvas } from '../core/TM';
+import type { TransducerStep } from '../types/transducers';
+import { buildMealyFromCanvas, buildMooreFromCanvas } from './transducerAdapter';
 import { buildAndSimulate, fastRun } from './simulationAdapter';
 import { completeDFA } from '../core/trapStateGenerator';
 import { parseJFF } from '../core/io/JFFParser';
@@ -117,6 +119,10 @@ interface AutomataState {
   selectedPdaConfigIndex: number;
   /** 1-Tape Turing Machine simulation steps with tape ribbon; null for other machines. */
   tmSteps: TMStep[] | null;
+  /** Transducer (Mealy / Moore) simulation steps; null for standard FA. */
+  transducerSteps: TransducerStep[] | null;
+  /** Cumulative transducer output produced during simulation. */
+  transducerOutput: string | null;
   /** Result of instant fast simulation and trace modal; null when not run. */
   fastRunResult: FastRunResult | null;
   /** Test cases for multiple run batch testing. */
@@ -147,6 +153,7 @@ interface AutomataState {
 interface AutomataActions {
   addNode: (node: AutomataNode) => void;
   updateNodeLabel: (nodeId: string, label: string) => void;
+  updateMooreOutput: (nodeId: string, output: string) => void;
   addEdge: (edge: AutomataEdge) => void;
   /**
    * Convenience action called by the Sidebar "Add Transition" button.
@@ -345,6 +352,8 @@ const SIMULATION_RESET = {
   pdaSteps: null as PDASimulationStep[] | null,
   selectedPdaConfigIndex: 0,
   tmSteps: null as TMStep[] | null,
+  transducerSteps: null as TransducerStep[] | null,
+  transducerOutput: null as string | null,
 } as const;
 
 const INITIAL_STATE: AutomataState = {
@@ -414,6 +423,16 @@ export const useAutomataStore = create<AutomataStore>()(
           past: recordPast(state.past, state.nodes, state.edges),
           future: [],
           nodes: state.nodes.map((n) => n.id === nodeId ? { ...n, label } : n),
+        }));
+      },
+
+      updateMooreOutput: (nodeId, output): void => {
+        set((state) => ({
+          past: recordPast(state.past, state.nodes, state.edges),
+          future: [],
+          nodes: state.nodes.map((n) =>
+            n.id === nodeId ? { ...n, mooreOutput: output } : n,
+          ),
         }));
       },
 
@@ -687,6 +706,90 @@ export const useAutomataStore = create<AutomataStore>()(
         simulationError: null,
       });
       return;
+    }
+
+    // Check if graph is a Mealy Machine
+    const isMealyMode =
+      machineType === 'mealy' ||
+      edges.some((e) => e.symbols.some((s) => s.includes('/') && !s.includes(';')));
+
+    if (isMealyMode) {
+      const mealyResult = buildMealyFromCanvas(nodes, edges);
+      if (mealyResult.error || !mealyResult.mealy) {
+        set({
+          ...SIMULATION_RESET,
+          simulationError: mealyResult.error ?? 'Invalid Mealy Machine graph.',
+        });
+        return;
+      }
+      try {
+        const sim = mealyResult.mealy.simulate(input);
+        const allSteps: Set<string>[] = sim.steps.map(
+          (s) => new Set([s.stateId]),
+        );
+        // Prepend initial state as step 0
+        const initialNodes = nodes.filter((n) => n.isInitial);
+        const initId = initialNodes[0]?.id ?? '';
+        const fullSteps: Set<string>[] = [new Set([initId]), ...allSteps];
+
+        set({
+          ...SIMULATION_RESET,
+          transducerSteps: sim.steps,
+          transducerOutput: sim.output,
+          simulationSteps: fullSteps,
+          currentStepIndex: 0,
+          activeNodeIds: fullSteps[0] ?? new Set(),
+          simulationAccepted: true,
+          simulationError: null,
+        });
+        return;
+      } catch (err) {
+        set({
+          ...SIMULATION_RESET,
+          simulationError: err instanceof Error ? err.message : String(err),
+        });
+        return;
+      }
+    }
+
+    // Check if graph is a Moore Machine
+    const isMooreMode =
+      machineType === 'moore' ||
+      nodes.some((n) => n.mooreOutput !== undefined);
+
+    if (isMooreMode) {
+      const mooreResult = buildMooreFromCanvas(nodes, edges);
+      if (mooreResult.error || !mooreResult.moore) {
+        set({
+          ...SIMULATION_RESET,
+          simulationError: mooreResult.error ?? 'Invalid Moore Machine graph.',
+        });
+        return;
+      }
+      try {
+        const sim = mooreResult.moore.simulate(input);
+        const allSteps: Set<string>[] = sim.steps.map(
+          (s) => new Set([s.stateId]),
+        );
+
+        set({
+          ...SIMULATION_RESET,
+          transducerSteps: sim.steps,
+          transducerOutput: sim.output,
+          simulationSteps: allSteps,
+          currentStepIndex: 0,
+          activeNodeIds: allSteps[0] ?? new Set(),
+          simulationAccepted: true,
+          simulationError: null,
+        });
+        return;
+      } catch (err) {
+        set({
+          ...SIMULATION_RESET,
+          simulationError: err instanceof Error ? err.message : String(err),
+        });
+        return;
+      }
     }
 
     // Check if graph is a PDA

@@ -8,6 +8,7 @@ export interface AutomataNode {
   label: string;
   isInitial: boolean;
   isAccepting: boolean;
+  mooreOutput?: string;
 }
 
 /**

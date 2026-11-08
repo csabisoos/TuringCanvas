@@ -10,21 +10,40 @@ export interface StateNodeData {
   isInitial: boolean;
   isAccepting: boolean;
   isActive: boolean;
+  mooreOutput?: string;
   [key: string]: unknown; // satisfies React Flow's Record<string, unknown> constraint
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function StateNode({ id, data, isConnectable }: NodeProps<Node<StateNodeData>>): ReactElement {
-  const { label, isInitial, isAccepting, isActive } = data;
+  const { label, isInitial, isAccepting, isActive, mooreOutput } = data;
+  const machineType = useAutomataStore((s) => s.machineType);
+  const isMoore = machineType === 'moore' || mooreOutput !== undefined;
 
+  const initialDraft = isMoore && mooreOutput !== undefined ? `${label} / ${mooreOutput}` : label;
   const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(label);
+  const [draft, setDraft] = useState(initialDraft);
   const updateNodeLabel = useAutomataStore((s) => s.updateNodeLabel);
+  const updateMooreOutput = useAutomataStore((s) => s.updateMooreOutput);
 
-  function commit() {
+  function commit(): void {
     const trimmed = draft.trim();
-    if (trimmed) updateNodeLabel(id, trimmed);
+    if (trimmed) {
+      if (isMoore && trimmed.includes('/')) {
+        const parts = trimmed.split('/').map((s) => s.trim());
+        if (parts.length >= 2) {
+          const lbl = parts[0] ?? '';
+          const out = parts[1] ?? '';
+          if (lbl) updateNodeLabel(id, lbl);
+          updateMooreOutput(id, out);
+        } else {
+          updateNodeLabel(id, trimmed);
+        }
+      } else {
+        updateNodeLabel(id, trimmed);
+      }
+    }
     setIsEditing(false);
   }
 
@@ -96,11 +115,23 @@ export function StateNode({ id, data, isConnectable }: NodeProps<Node<StateNodeD
             onBlur={commit}
             onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setIsEditing(false); }}
             onMouseDown={(e) => { e.stopPropagation(); }}
-            className="w-10 text-center text-xs bg-transparent border-b border-indigo-400 text-gray-100 outline-none"
+            className="w-12 text-center text-xs bg-transparent border-b border-indigo-400 text-gray-100 outline-none"
           />
         ) : (
-          <span onDoubleClick={() => { setDraft(label); setIsEditing(true); }} className="relative z-10 text-xs font-semibold text-gray-100 select-none text-center leading-tight px-1 break-all max-w-[3rem]">
-            {label}
+          <span
+            onDoubleClick={() => {
+              setDraft(isMoore && mooreOutput !== undefined ? `${label} / ${mooreOutput}` : label);
+              setIsEditing(true);
+            }}
+            className="relative z-10 flex flex-col items-center justify-center text-xs font-semibold text-gray-100 select-none text-center leading-tight px-1 break-all max-w-[3rem]"
+          >
+            <span>{label}</span>
+            {isMoore && mooreOutput !== undefined && (
+              <>
+                <div className="w-full border-t border-gray-500 my-0.5" />
+                <span className="text-[10px] font-mono text-purple-300">{mooreOutput}</span>
+              </>
+            )}
           </span>
         )}
       </div>

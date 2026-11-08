@@ -342,7 +342,7 @@ export const MACHINE_TYPES: MachineTypeDef[] = [
     description: 'Multiple tapes for parallel computation',
     icon: <MultiTapeTMIcon />,
     category: 'machines',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     type: 'mealy',
@@ -350,7 +350,7 @@ export const MACHINE_TYPES: MachineTypeDef[] = [
     description: 'Output depends on state and input',
     icon: <MealyMachineIcon />,
     category: 'machines',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     type: 'moore',
@@ -358,7 +358,7 @@ export const MACHINE_TYPES: MachineTypeDef[] = [
     description: 'Output depends only on state',
     icon: <MooreMachineIcon />,
     category: 'machines',
-    comingSoon: true,
+    comingSoon: false,
   },
 
   // ── FORMAL LANGUAGES ──────────────────────────────────────────────────────

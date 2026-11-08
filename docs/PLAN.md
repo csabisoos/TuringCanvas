@@ -101,11 +101,11 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] Task 4.3: Multi-Tape Turing Machine Engine & Visualization ($k \ge 2$) — *Completed 2026-11-08*
 * [ ] Task 4.4: Building Block Turing Machines (Macro nodes & subprograms)
 
-## Phase 12: Transducers (Mealy & Moore Machines) 🚀
+## Phase 12: Transducers (Mealy & Moore Machines) ✅ — *Completed 2026-11-08*
 
-* [ ] Task 5.1: Core Mealy & Moore Machine Engines (`src/core/transducers/`)
-* [ ] Task 5.2: Transducer Canvas Adapters, Output Labels & Synchronous Output Stream Ribbon
-* [ ] Task 5.3: Bidirectional Mealy $\leftrightarrow$ Moore Conversions
+* [x] Task 5.1: Core Mealy & Moore Machine Engines (`src/core/transducers/`) — *Completed 2026-11-08*
+* [x] Task 5.2: Transducer Canvas Adapters, Output Labels & Synchronous Output Stream Ribbon — *Completed 2026-11-08*
+* [x] Task 5.3: Bidirectional Mealy $\leftrightarrow$ Moore Conversions — *Completed 2026-11-08*
 
 ## Phase 13: Formal Grammars & Parsing (CFG Suite) 🚀
 

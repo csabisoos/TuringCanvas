@@ -44,6 +44,7 @@ function toFlowNode(
     label: string;
     isInitial: boolean;
     isAccepting: boolean;
+    mooreOutput?: string;
   },
   activeNodeIds: Set<string>,
 ): Node<StateNodeData> {
@@ -61,6 +62,7 @@ function toFlowNode(
       isInitial: node.isInitial,
       isAccepting: node.isAccepting,
       isActive: activeNodeIds.has(node.id),
+      mooreOutput: node.mooreOutput,
     },
   };
 }
