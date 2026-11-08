@@ -11,6 +11,7 @@ import { NfaToDfaModal } from '../conversions/NfaToDfaModal';
 import { DfaMinimizationModal } from '../conversions/DfaMinimizationModal';
 import { StateEliminationModal } from '../conversions/StateEliminationModal';
 import { CompareAutomataModal } from '../conversions/CompareAutomataModal';
+import { ComputationTreeDrawer } from '../simulation/ComputationTreeDrawer';
 
 export function EditorView(): ReactNode {
   const editorMode = useAutomataStore((s) => s.editorMode);
@@ -30,6 +31,7 @@ export function EditorView(): ReactNode {
           <AutomataCanvas />
           <FastRunModal />
           <BatchTestModal />
+          <ComputationTreeDrawer />
           <ExportLatexModal />
           <NfaToDfaModal />
           <DfaMinimizationModal />

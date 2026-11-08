@@ -251,6 +251,7 @@ function SimulatePanel(): ReactElement {
   const startSimulation  = useAutomataStore((s) => s.startSimulation);
   const runFastSimulation = useAutomataStore((s) => s.runFastSimulation);
   const setBatchModalOpen = useAutomataStore((s) => s.setBatchModalOpen);
+  const setTreeModalOpen  = useAutomataStore((s) => s.setTreeModalOpen);
   const stepForward      = useAutomataStore((s) => s.stepForward);
   const stepBack         = useAutomataStore((s) => s.stepBack);
   const jumpToStep       = useAutomataStore((s) => s.jumpToStep);
@@ -411,6 +412,15 @@ function SimulatePanel(): ReactElement {
         disabled={!hasNodes}
       >
         Multiple Run (Batch)
+      </SidebarButton>
+      <SidebarButton
+        id="simulate-tree-btn"
+        icon={<TreeIcon />}
+        aria-label="Open nondeterministic computation tree"
+        onClick={() => { setTreeModalOpen(true); }}
+        disabled={!hasNodes}
+      >
+        Branching Tree
       </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
@@ -635,6 +645,20 @@ function ResetIcon(): ReactElement {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <polyline points="1 4 1 10 7 10" />
       <path d="M3.51 15a9 9 0 1 0 .49-4.95" />
+    </svg>
+  );
+}
+
+function TreeIcon(): ReactElement {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3v6" />
+      <path d="M6 15l6-6 6 6" />
+      <path d="M6 21v-6" />
+      <path d="M18 21v-6" />
+      <circle cx="12" cy="3" r="2" />
+      <circle cx="6" cy="21" r="2" />
+      <circle cx="18" cy="21" r="2" />
     </svg>
   );
 }

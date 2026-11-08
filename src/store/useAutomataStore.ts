@@ -147,6 +147,8 @@ interface AutomataState {
   isGnfaModalOpen: boolean;
   /** Whether the automata comparison / equivalence modal is open. */
   isCompareModalOpen: boolean;
+  /** Whether the computation tree visualizer modal is open. */
+  isTreeModalOpen: boolean;
   /** Generated LaTeX/TikZ code. */
   latexCode: string;
   /** Undo history stack. */
@@ -274,6 +276,10 @@ interface AutomataActions {
   setGnfaModalOpen: (open: boolean) => void;
   /** Sets whether the automata comparison / equivalence modal is open. */
   setCompareModalOpen: (open: boolean) => void;
+  /** Sets whether the computation tree visualizer modal is open. */
+  setTreeModalOpen: (open: boolean) => void;
+  /** Sets active highlighted node IDs on the canvas. */
+  setActiveNodeIds: (ids: string[]) => void;
   /** Replaces the current canvas with the converted DFA nodes and edges. */
   applyConvertedDFA: (nodes: AutomataNode[], edges: AutomataEdge[]) => void;
   /**
@@ -382,6 +388,7 @@ const INITIAL_STATE: AutomataState = {
   isMinimizationModalOpen: false,
   isGnfaModalOpen: false,
   isCompareModalOpen: false,
+  isTreeModalOpen: false,
   latexCode: '',
   past: [],
   future: [],
@@ -1043,6 +1050,14 @@ export const useAutomataStore = create<AutomataStore>()(
     set({ isCompareModalOpen: open });
   },
 
+  setTreeModalOpen: (open: boolean): void => {
+    set({ isTreeModalOpen: open });
+  },
+
+  setActiveNodeIds: (ids: string[]): void => {
+    set({ activeNodeIds: new Set(ids) });
+  },
+
   applyConvertedDFA: (nodes: AutomataNode[], edges: AutomataEdge[]): void => {
     const { past, nodes: prevNodes, edges: prevEdges } = get();
     set({
@@ -1054,6 +1069,7 @@ export const useAutomataStore = create<AutomataStore>()(
   isMinimizationModalOpen: false,
   isGnfaModalOpen: false,
   isCompareModalOpen: false,
+  isTreeModalOpen: false,
       ...SIMULATION_RESET,
     });
   },
