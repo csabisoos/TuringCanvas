@@ -1,3 +1,4 @@
+import process from 'node:process';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -6,7 +7,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 // When running inside GitHub Actions the GITHUB_ACTIONS env var is set to
 // the string "true". We use this to derive the correct base path so that
 // the app works both locally (base: '/') and on GitHub Pages (base: '/TuringCanvas/').
-const isCI = process.env['GITHUB_ACTIONS'] === 'true';
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+const isCI = process.env.GITHUB_ACTIONS === 'true';
 const base = isCI ? '/TuringCanvas/' : '/';
 
 // https://vitejs.dev/config/

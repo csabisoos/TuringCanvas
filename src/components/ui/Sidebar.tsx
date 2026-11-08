@@ -43,7 +43,7 @@ function EditPanel(): ReactElement {
   function handleAddTransition(): void {
     if (canAddTransition) {
       // Fast path: two nodes already selected — create a ε transition between them.
-      addTransition(selectedNodeIds[0]!, selectedNodeIds[1]!);
+      addTransition(selectedNodeIds[0], selectedNodeIds[1]);
       return;
     }
     // Otherwise, toggle the canvas's drag-to-connect tool. Connections can only
@@ -117,7 +117,7 @@ function EditPanel(): ReactElement {
         id="sidebar-delete-selected-btn"
         icon={<TrashIcon />}
         aria-label="Delete selected elements"
-        onClick={() => deleteSelected(selectedNodeIds, selectedEdgeIds)}
+        onClick={() => { deleteSelected(selectedNodeIds, selectedEdgeIds); }}
         disabled={!hasSelection}
         danger
       >

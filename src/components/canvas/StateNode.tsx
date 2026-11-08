@@ -92,10 +92,10 @@ export function StateNode({ id, data, isConnectable }: NodeProps<Node<StateNodeD
           <input
             autoFocus
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => { setDraft(e.target.value); }}
             onBlur={commit}
             onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setIsEditing(false); }}
-            onMouseDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => { e.stopPropagation(); }}
             className="w-10 text-center text-xs bg-transparent border-b border-indigo-400 text-gray-100 outline-none"
           />
         ) : (

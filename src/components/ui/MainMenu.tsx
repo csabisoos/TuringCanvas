@@ -36,7 +36,7 @@ export function MainMenu(): ReactElement {
             title={title}
             description={description}
             icon={icon}
-            onClick={() => openEditor(type)}
+            onClick={() => { openEditor(type); }}
           />
         ))}
       </main>

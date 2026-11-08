@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
-import { ContentView } from '../../store/useAutomataStore';
+import type { ContentView } from '../../store/useAutomataStore';
 
 type NavSection =
   | 'dashboard'
@@ -248,7 +248,7 @@ export function AppSidebar(): ReactNode {
           <button
             key={item.id}
             type="button"
-            onClick={() => setContentView(item.id as ContentView)}
+            onClick={() => { setContentView(item.id as ContentView); }}
             className={`
               flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150
               ${isActive(item.id) ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'}

@@ -548,16 +548,19 @@ export const useAutomataStore = create<AutomataStore>()(
 
   openFile: async (): Promise<void> => {
     // TODO: Implement File System Access API
+    await Promise.resolve();
     console.warn('openFile not yet implemented');
   },
 
   saveFile: async (): Promise<void> => {
     // TODO: Implement File System Access API
+    await Promise.resolve();
     console.warn('saveFile not yet implemented');
   },
 
   saveFileAs: async (): Promise<void> => {
     // TODO: Implement File System Access API
+    await Promise.resolve();
     console.warn('saveFileAs not yet implemented');
   },
 

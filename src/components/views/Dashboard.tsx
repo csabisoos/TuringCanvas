@@ -57,7 +57,7 @@ export function Dashboard(): ReactNode {
                       title={t.title}
                       description={t.description}
                       icon={t.icon}
-                      onClick={() => setContentView('editor')}
+                      onClick={() => { setContentView('editor'); }}
                     />
                   ))}
                 </div>
@@ -75,7 +75,7 @@ export function Dashboard(): ReactNode {
                       title={t.title}
                       description={t.description}
                       icon={t.icon}
-                      onClick={() => setContentView('editor')}
+                      onClick={() => { setContentView('editor'); }}
                       comingSoon
                     />
                   ))}
@@ -104,21 +104,21 @@ export function Dashboard(): ReactNode {
           <div className="flex gap-2 justify-center flex-wrap">
             <button
               type="button"
-              onClick={() => setContentView('editor')}
+              onClick={() => { setContentView('editor'); }}
               className="px-4 py-2 rounded-md bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-500 transition-colors"
             >
               New
             </button>
             <button
               type="button"
-              onClick={() => setContentView('editor')}
+              onClick={() => { setContentView('editor'); }}
               className="px-4 py-2 rounded-md bg-gray-800 text-gray-300 font-medium text-sm hover:bg-gray-700 transition-colors"
             >
               Open
             </button>
             <button
               type="button"
-              onClick={() => setContentView('editor')}
+              onClick={() => { setContentView('editor'); }}
               className="px-4 py-2 rounded-md bg-gray-800 text-gray-300 font-medium text-sm hover:bg-gray-700 transition-colors"
             >
               Examples

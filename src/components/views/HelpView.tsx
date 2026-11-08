@@ -13,7 +13,7 @@ interface AboutItem {
 }
 
 export function HelpView(): ReactNode {
-  const returnToMenu = useAutomataStore((s) => s.returnToMenu);
+  const returnToDashboard = useAutomataStore((s) => s.returnToDashboard);
 
   const aboutInfo = {
     title: 'TuringCanvas',
@@ -108,7 +108,7 @@ export function HelpView(): ReactNode {
       <div className="mt-8 text-center">
         <button
           type="button"
-          onClick={() => returnToMenu(false)}
+          onClick={() => { returnToDashboard(false); }}
           className="px-6 py-2 rounded-md bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-500 transition-colors"
         >
           Return to Dashboard

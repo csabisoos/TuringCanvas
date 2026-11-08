@@ -87,7 +87,7 @@ function EdgeInput({ initialValue, onCommit, onCancel }: EdgeInputProps): ReactE
       el.focus();
       el.select();
     });
-    return () => cancelAnimationFrame(raf);
+    return () => { cancelAnimationFrame(raf); };
   }, []);
 
   const handleCommit = useCallback(() => {
@@ -120,13 +120,13 @@ function EdgeInput({ initialValue, onCommit, onCancel }: EdgeInputProps): ReactE
     <input
       ref={inputRef}
       value={draft}
-      onChange={(e) => setDraft(e.target.value)}
+      onChange={(e) => { setDraft(e.target.value); }}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      onMouseDown={(e) => e.stopPropagation()}
-      onPointerDown={(e) => e.stopPropagation()}
-      onTouchStart={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => { e.stopPropagation(); }}
+      onPointerDown={(e) => { e.stopPropagation(); }}
+      onTouchStart={(e) => { e.stopPropagation(); }}
+      onClick={(e) => { e.stopPropagation(); }}
       className="w-20 text-center text-xs bg-indigo-950 border border-indigo-400 text-indigo-100 outline-none rounded px-1 py-0.5 focus:ring-1 focus:ring-indigo-400"
     />
   );
@@ -209,7 +209,7 @@ export function EditableEdge({
         <div
           style={{
             position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+            transform: `translate(-50%, -50%) translate(${labelX.toString()}px, ${labelY.toString()}px)`,
             // REQUIRED: without pointerEvents: 'all', clicks fall through to
             // the canvas pan/zoom handler and never reach the label or input.
             pointerEvents: 'all',
@@ -217,9 +217,9 @@ export function EditableEdge({
           className="nodrag nopan"
           // Stop ALL pointer events from bubbling out of this wrapper so that
           // React Flow's pane handlers (selection box, pan) never interfere.
-          onMouseDown={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
+          onMouseDown={(e) => { e.stopPropagation(); }}
+          onPointerDown={(e) => { e.stopPropagation(); }}
+          onTouchStart={(e) => { e.stopPropagation(); }}
         >
           {isEditing ? (
             <EdgeInput
