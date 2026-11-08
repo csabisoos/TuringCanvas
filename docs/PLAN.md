@@ -116,10 +116,10 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] Task 6.5: SLR(1) / LR(1) Parsing Suite (Item Sets DFA, Action/Goto Tables) — *Completed 2026-11-08*
 * [x] Task 6.6: Interactive SVG Derivation Tree / Parse Tree Visualizer — *Completed 2026-11-08*
 
-## Phase 14: Pumping Lemma Games & L-Systems 🚀
+## Phase 14: Pumping Lemma Games & L-Systems ✅ — *Completed 2026-11-08*
 
 * [x] Task 7.1: Regular Pumping Lemma Game Engine ($w = xyz$, Human vs AI) — *Completed 2026-11-08*
 * [x] Task 7.2: Regular Pumping Lemma Interactive Partition Sliders UI — *Completed 2026-11-08*
 * [x] Task 7.3: Context-Free Pumping Lemma Game ($w = uvxyz$) & 5-Way Partition UI — *Completed 2026-11-08*
-* [ ] Task 8.1: L-System Rewriting Engine (Axiom, Rules, Stochastic, Depth)
-* [ ] Task 8.2: 2D Turtle Graphics HTML5 Canvas Renderer & Classic Fractal Presets
+* [x] Task 8.1: L-System Rewriting Engine (Axiom, Rules, Stochastic, Depth) — *Completed 2026-11-08*
+* [x] Task 8.2: 2D Turtle Graphics HTML5 Canvas Renderer & Classic Fractal Presets — *Completed 2026-11-08*

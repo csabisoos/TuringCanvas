@@ -376,7 +376,7 @@ export const MACHINE_TYPES: MachineTypeDef[] = [
     description: 'Lindenmayer systems for fractals',
     icon: <LSystemIcon />,
     category: 'formal-languages',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     type: 'regex',
