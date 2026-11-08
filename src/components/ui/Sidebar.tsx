@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from 'react';
+import { useState, useEffect, type ReactElement } from 'react';
 import { useAutomataStore } from '../../store/useAutomataStore';
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -141,6 +141,8 @@ function SimulatePanel(): ReactElement {
 
   const startSimulation  = useAutomataStore((s) => s.startSimulation);
   const stepForward      = useAutomataStore((s) => s.stepForward);
+  const stepBack         = useAutomataStore((s) => s.stepBack);
+  const jumpToStep       = useAutomataStore((s) => s.jumpToStep);
   const resetSimulation  = useAutomataStore((s) => s.resetSimulation);
   const currentStepIndex = useAutomataStore((s) => s.currentStepIndex);
   const simulationSteps  = useAutomataStore((s) => s.simulationSteps);
@@ -152,7 +154,30 @@ function SimulatePanel(): ReactElement {
   const isRunning = currentStepIndex >= 0;
   const isFinished = simulationAccepted !== null;
   const canStep = isRunning && !isFinished;
+  const canStepBack = isRunning && currentStepIndex > 0;
   const stepLabel = `${String(Math.max(0, currentStepIndex))} / ${String(Math.max(0, simulationSteps.length - 1))}`;
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent): void {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      if (!isRunning) return;
+
+      if (e.key === 'ArrowRight' && canStep) {
+        e.preventDefault();
+        stepForward();
+      } else if (e.key === 'ArrowLeft' && canStepBack) {
+        e.preventDefault();
+        stepBack();
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isRunning, canStep, canStepBack, stepForward, stepBack]);
 
   function handleStart(): void {
     startSimulation(testInput);
@@ -205,15 +230,44 @@ function SimulatePanel(): ReactElement {
       >
         Start
       </SidebarButton>
-      <SidebarButton
-        id="simulate-step-btn"
-        icon={<StepIcon />}
-        aria-label="Step forward one symbol"
-        onClick={stepForward}
-        disabled={!canStep}
-      >
-        Step
-      </SidebarButton>
+      <div className="grid grid-cols-2 gap-1.5">
+        <SidebarButton
+          id="simulate-step-back-btn"
+          icon={<StepBackIcon />}
+          aria-label="Step back one symbol"
+          onClick={stepBack}
+          disabled={!canStepBack}
+        >
+          Step Back
+        </SidebarButton>
+        <SidebarButton
+          id="simulate-step-btn"
+          icon={<StepIcon />}
+          aria-label="Step forward one symbol"
+          onClick={stepForward}
+          disabled={!canStep}
+        >
+          Step Forward
+        </SidebarButton>
+      </div>
+      {isRunning && simulationSteps.length > 1 && (
+        <div className="flex flex-col gap-1 px-1 py-1">
+          <div className="flex justify-between text-[10px] text-gray-400 font-mono">
+            <span>0</span>
+            <span>{simulationSteps.length - 1}</span>
+          </div>
+          <input
+            id="simulate-scrubber"
+            type="range"
+            min={0}
+            max={simulationSteps.length - 1}
+            value={currentStepIndex}
+            onChange={(e) => { jumpToStep(Number(e.target.value)); }}
+            className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+            aria-label="Simulation step scrubber"
+          />
+        </div>
+      )}
       <SidebarButton
         id="simulate-reset-btn"
         icon={<ResetIcon />}
@@ -376,6 +430,15 @@ function StepIcon(): ReactElement {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <polyline points="13 17 18 12 13 7" />
       <polyline points="6 17 11 12 6 7" />
+    </svg>
+  );
+}
+
+function StepBackIcon(): ReactElement {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="11 17 6 12 11 7" />
+      <polyline points="18 17 13 12 18 7" />
     </svg>
   );
 }

@@ -171,6 +171,15 @@ interface AutomataActions {
    */
   stepForward: () => void;
   /**
+   * Reverts the simulation to the previous step.
+   * No-ops if we are at step 0 or not running.
+   */
+  stepBack: () => void;
+  /**
+   * Jumps directly to any step index in the active simulation.
+   */
+  jumpToStep: (stepIndex: number) => void;
+  /**
    * Clears all simulation state back to the "not started" baseline.
    */
   resetSimulation: () => void;
@@ -489,6 +498,38 @@ export const useAutomataStore = create<AutomataStore>()(
         activeNodeIds: new Set(nextActive),
         simulationAccepted: accepted,
       };
+    });
+  },
+
+  stepBack: (): void => {
+    const { simulationSteps, currentStepIndex } = get();
+    if (currentStepIndex <= 0) return;
+
+    const prevIndex = currentStepIndex - 1;
+    const prevActive = simulationSteps[prevIndex];
+
+    set({
+      currentStepIndex: prevIndex,
+      activeNodeIds: new Set(prevActive),
+      simulationAccepted: null,
+    });
+  },
+
+  jumpToStep: (stepIndex: number): void => {
+    const { simulationSteps, nodes } = get();
+    if (simulationSteps.length === 0) return;
+    if (stepIndex < 0 || stepIndex >= simulationSteps.length) return;
+
+    const active = simulationSteps[stepIndex];
+    const isLast = stepIndex === simulationSteps.length - 1;
+    const accepted = isLast
+      ? [...active].some((id) => nodes.find((n) => n.id === id)?.isAccepting ?? false)
+      : null;
+
+    set({
+      currentStepIndex: stepIndex,
+      activeNodeIds: new Set(active),
+      simulationAccepted: accepted,
     });
   },
 

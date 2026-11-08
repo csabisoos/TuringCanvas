@@ -281,6 +281,88 @@ describe('useAutomataStore — simulation actions', () => {
     });
   });
 
+  describe('stepBack', () => {
+    it('decrements currentStepIndex and updates activeNodeIds', () => {
+      getState().startSimulation('ba'); // 0 -> 1 -> 2
+      getState().stepForward(); // at step 1
+      getState().stepForward(); // at step 2 (accepting)
+      expect(getState().currentStepIndex).toBe(2);
+      expect(getState().simulationAccepted).toBe(true);
+
+      getState().stepBack();
+      expect(getState().currentStepIndex).toBe(1);
+      expect(getState().simulationAccepted).toBeNull();
+      expect(getState().activeNodeIds.has('q0')).toBe(true);
+
+      getState().stepBack();
+      expect(getState().currentStepIndex).toBe(0);
+      expect(getState().simulationAccepted).toBeNull();
+    });
+
+    it('is a no-op at step 0', () => {
+      getState().startSimulation('ba');
+      expect(getState().currentStepIndex).toBe(0);
+      getState().stepBack();
+      expect(getState().currentStepIndex).toBe(0);
+    });
+
+    it('is a no-op before simulation starts', () => {
+      getState().resetSimulation();
+      getState().stepBack();
+      expect(getState().currentStepIndex).toBe(-1);
+    });
+
+    it('allows stepping forward again after stepping back from final step', () => {
+      getState().startSimulation('a'); // 0 -> 1
+      getState().stepForward();
+      expect(getState().simulationAccepted).toBe(true);
+
+      getState().stepBack();
+      expect(getState().currentStepIndex).toBe(0);
+      expect(getState().simulationAccepted).toBeNull();
+
+      getState().stepForward();
+      expect(getState().currentStepIndex).toBe(1);
+      expect(getState().simulationAccepted).toBe(true);
+    });
+  });
+
+  describe('jumpToStep', () => {
+    it('jumps directly to an arbitrary step index and updates state', () => {
+      getState().startSimulation('bba'); // steps 0, 1, 2, 3
+      expect(getState().simulationSteps).toHaveLength(4);
+
+      getState().jumpToStep(2);
+      expect(getState().currentStepIndex).toBe(2);
+      expect(getState().simulationAccepted).toBeNull();
+
+      // Jump to final step evaluates acceptance
+      getState().jumpToStep(3);
+      expect(getState().currentStepIndex).toBe(3);
+      expect(getState().simulationAccepted).toBe(true);
+
+      // Jump back to step 0 resets acceptance to null
+      getState().jumpToStep(0);
+      expect(getState().currentStepIndex).toBe(0);
+      expect(getState().simulationAccepted).toBeNull();
+    });
+
+    it('ignores out of bounds step indices', () => {
+      getState().startSimulation('ba'); // 0, 1, 2
+      getState().jumpToStep(-1);
+      expect(getState().currentStepIndex).toBe(0);
+
+      getState().jumpToStep(10);
+      expect(getState().currentStepIndex).toBe(0);
+    });
+
+    it('is a no-op when simulation has not started', () => {
+      getState().resetSimulation();
+      getState().jumpToStep(0);
+      expect(getState().currentStepIndex).toBe(-1);
+    });
+  });
+
   describe('resetSimulation', () => {
     it('clears activeNodeIds, steps, stepIndex, and accepted flag', () => {
       getState().startSimulation('a');
