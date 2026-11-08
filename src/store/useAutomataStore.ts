@@ -117,6 +117,8 @@ interface AutomataState {
   isLatexModalOpen: boolean;
   /** Whether the interactive NFA to DFA conversion modal is open. */
   isNfaToDfaModalOpen: boolean;
+  /** Whether the DFA minimization modal is open. */
+  isMinimizationModalOpen: boolean;
   /** Generated LaTeX/TikZ code. */
   latexCode: string;
   /** Undo history stack. */
@@ -233,6 +235,8 @@ interface AutomataActions {
   applyAutoLayout: (algorithm: LayoutAlgorithm) => void;
   /** Sets whether the interactive NFA to DFA modal is open. */
   setNfaToDfaModalOpen: (open: boolean) => void;
+  /** Sets whether the DFA minimization modal is open. */
+  setMinimizationModalOpen: (open: boolean) => void;
   /** Replaces the current canvas with the converted DFA nodes and edges. */
   applyConvertedDFA: (nodes: AutomataNode[], edges: AutomataEdge[]) => void;
   /**
@@ -333,6 +337,7 @@ const INITIAL_STATE: AutomataState = {
   isBatchModalOpen: false,
   isLatexModalOpen: false,
   isNfaToDfaModalOpen: false,
+  isMinimizationModalOpen: false,
   latexCode: '',
   past: [],
   future: [],
@@ -806,6 +811,10 @@ export const useAutomataStore = create<AutomataStore>()(
     set({ isNfaToDfaModalOpen: open });
   },
 
+  setMinimizationModalOpen: (open: boolean): void => {
+    set({ isMinimizationModalOpen: open });
+  },
+
   applyConvertedDFA: (nodes: AutomataNode[], edges: AutomataEdge[]): void => {
     const { past, nodes: prevNodes, edges: prevEdges } = get();
     set({
@@ -814,6 +823,7 @@ export const useAutomataStore = create<AutomataStore>()(
       nodes,
       edges,
       isNfaToDfaModalOpen: false,
+  isMinimizationModalOpen: false,
       ...SIMULATION_RESET,
     });
   },
