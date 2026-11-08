@@ -140,6 +140,7 @@ function SimulatePanel(): ReactElement {
   const [testInput, setTestInput] = useState('');
 
   const startSimulation  = useAutomataStore((s) => s.startSimulation);
+  const runFastSimulation = useAutomataStore((s) => s.runFastSimulation);
   const stepForward      = useAutomataStore((s) => s.stepForward);
   const stepBack         = useAutomataStore((s) => s.stepBack);
   const jumpToStep       = useAutomataStore((s) => s.jumpToStep);
@@ -221,15 +222,26 @@ function SimulatePanel(): ReactElement {
 
       <SectionLabel>Controls</SectionLabel>
 
-      <SidebarButton
-        id="simulate-start-btn"
-        icon={<PlayIcon />}
-        aria-label="Start simulation"
-        onClick={handleStart}
-        disabled={startDisabled}
-      >
-        Start
-      </SidebarButton>
+      <div className="grid grid-cols-2 gap-1.5">
+        <SidebarButton
+          id="simulate-start-btn"
+          icon={<PlayIcon />}
+          aria-label="Start simulation"
+          onClick={handleStart}
+          disabled={startDisabled}
+        >
+          Start
+        </SidebarButton>
+        <SidebarButton
+          id="simulate-fast-run-btn"
+          icon={<FastForwardIcon />}
+          aria-label="Fast run trace"
+          onClick={() => { runFastSimulation(testInput); }}
+          disabled={!hasNodes}
+        >
+          Fast Run
+        </SidebarButton>
+      </div>
       <div className="grid grid-cols-2 gap-1.5">
         <SidebarButton
           id="simulate-step-back-btn"
@@ -421,6 +433,15 @@ function PlayIcon(): ReactElement {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <polygon points="5 3 19 12 5 21 5 3" />
+    </svg>
+  );
+}
+
+function FastForwardIcon(): ReactElement {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polygon points="13 19 22 12 13 5 13 19" />
+      <polygon points="2 19 11 12 2 5 2 19" />
     </svg>
   );
 }

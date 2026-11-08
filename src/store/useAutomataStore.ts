@@ -3,7 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
-import { buildAndSimulate } from './simulationAdapter';
+import type { FastRunResult } from '../types/simulation';
+import { buildAndSimulate, fastRun } from './simulationAdapter';
 
 // ── Serialized payload shape ──────────────────────────────────────────────────
 
@@ -99,6 +100,8 @@ interface AutomataState {
   simulationError: string | null;
   /** Set to true/false after the last step is reached; null while in-progress. */
   simulationAccepted: boolean | null;
+  /** Result of instant fast simulation and trace modal; null when not run. */
+  fastRunResult: FastRunResult | null;
 
   // ── Preferences ───────────────────────────────────────────────────────────
   preferences: UserPreferences;
@@ -180,6 +183,14 @@ interface AutomataActions {
    */
   jumpToStep: (stepIndex: number) => void;
   /**
+   * Runs an instant fast simulation on the input string and records the execution trace.
+   */
+  runFastSimulation: (input: string) => void;
+  /**
+   * Clears the fast simulation result.
+   */
+  clearFastRun: () => void;
+  /**
    * Clears all simulation state back to the "not started" baseline.
    */
   resetSimulation: () => void;
@@ -229,6 +240,7 @@ const SIMULATION_RESET = {
   currentStepIndex: -1,
   simulationError: null,
   simulationAccepted: null,
+  fastRunResult: null as FastRunResult | null,
 } as const;
 
 const INITIAL_STATE: AutomataState = {
@@ -534,6 +546,31 @@ export const useAutomataStore = create<AutomataStore>()(
   },
 
   resetSimulation: (): void => { set(SIMULATION_RESET); },
+
+  runFastSimulation: (input: string): void => {
+    const { nodes, edges } = get();
+    const res = fastRun(nodes, edges, input);
+    if ('kind' in res) {
+      const messages: Record<string, string> = {
+        NO_INITIAL_STATE: 'The automaton must have exactly one initial state.',
+        EMPTY_ALPHABET: 'The automaton has no transitions.',
+        ENGINE_ERROR: 'Simulation failed: internal engine error.',
+      };
+      set({
+        fastRunResult: null,
+        simulationError: messages[res.kind] ?? 'Unknown simulation error.',
+      });
+      return;
+    }
+    set({
+      fastRunResult: res,
+      simulationError: null,
+    });
+  },
+
+  clearFastRun: (): void => {
+    set({ fastRunResult: null });
+  },
 
   openEditor: (type): void => {
     set({ contentView: 'editor', machineType: type });

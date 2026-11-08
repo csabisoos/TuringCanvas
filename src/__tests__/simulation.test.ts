@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { buildAndSimulate } from '../store/simulationAdapter';
+import { buildAndSimulate, fastRun } from '../store/simulationAdapter';
 import { useAutomataStore } from '../store/useAutomataStore';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
 
@@ -193,6 +193,60 @@ describe('buildAndSimulate', () => {
       expect(result.steps[0].size).toBe(0);
       expect(result.accepted).toBe(false);
     });
+  });
+});
+
+describe('fastRun (trace evaluation)', () => {
+  it('returns trace and accepted result for DFA accepting string', () => {
+    const { nodes, edges } = makeEndsInA();
+    const result = fastRun(nodes, edges, 'ba');
+    if ('kind' in result) throw new Error('Expected fast run success');
+    expect(result.accepted).toBe(true);
+    expect(result.input).toBe('ba');
+    expect(result.totalSteps).toBe(3);
+    expect(result.trace).toHaveLength(3);
+
+    // Step 0: start at q0
+    expect(result.trace[0].stepIndex).toBe(0);
+    expect(result.trace[0].symbolConsumed).toBeNull();
+    expect(result.trace[0].activeStateIds).toEqual(['q0']);
+    expect(result.trace[0].activeStateLabels).toEqual(['q0']);
+
+    // Step 1: on 'b' -> q0
+    expect(result.trace[1].symbolConsumed).toBe('b');
+    expect(result.trace[1].activeStateIds).toEqual(['q0']);
+
+    // Step 2: on 'a' -> q1
+    expect(result.trace[2].symbolConsumed).toBe('a');
+    expect(result.trace[2].activeStateIds).toEqual(['q1']);
+  });
+
+  it('returns rejected result for DFA rejecting string', () => {
+    const { nodes, edges } = makeEndsInA();
+    const result = fastRun(nodes, edges, 'ab');
+    if ('kind' in result) throw new Error('Expected fast run success');
+    expect(result.accepted).toBe(false);
+  });
+
+  it('tracks parallel NFA branch states in trace', () => {
+    const { nodes, edges } = makeNFAaOrAA();
+    const result = fastRun(nodes, edges, 'a');
+    if ('kind' in result) throw new Error('Expected fast run success');
+    expect(result.accepted).toBe(true);
+    // After 'a', active states should include both q1 and q2
+    expect(result.trace[1].activeStateIds).toContain('q1');
+    expect(result.trace[1].activeStateIds).toContain('q2');
+  });
+
+  it('returns simulation error if automaton has no initial state', () => {
+    const nodes: AutomataNode[] = [
+      { id: 'q0', position: { x: 0, y: 0 }, label: 'q0', isInitial: false, isAccepting: true },
+    ];
+    const result = fastRun(nodes, [], 'a');
+    expect('kind' in result).toBe(true);
+    if ('kind' in result) {
+      expect(result.kind).toBe('NO_INITIAL_STATE');
+    }
   });
 });
 
@@ -380,6 +434,27 @@ describe('useAutomataStore — simulation actions', () => {
       getState().resetSimulation();
       getState().resetSimulation();
       expect(getState().currentStepIndex).toBe(-1);
+    });
+  });
+
+  describe('runFastSimulation & clearFastRun', () => {
+    it('sets fastRunResult on successful fast simulation', () => {
+      getState().runFastSimulation('ba');
+      const res = getState().fastRunResult;
+      expect(res).not.toBeNull();
+      expect(res?.accepted).toBe(true);
+      expect(res?.input).toBe('ba');
+      expect(res?.trace).toHaveLength(3);
+
+      getState().clearFastRun();
+      expect(getState().fastRunResult).toBeNull();
+    });
+
+    it('sets simulationError when graph cannot run fast simulation', () => {
+      getState().clearStore();
+      getState().runFastSimulation('a');
+      expect(getState().fastRunResult).toBeNull();
+      expect(getState().simulationError).toBeTruthy();
     });
   });
 });

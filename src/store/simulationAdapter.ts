@@ -24,6 +24,7 @@ import { NFA } from '../core/NFA';
 import { EPSILON } from '../types/automata';
 import type { State } from '../types/automata';
 import type { AutomataNode, AutomataEdge } from '../types/ui';
+import type { ExecutionTraceStep, FastRunResult } from '../types/simulation';
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -171,4 +172,45 @@ export function buildAndSimulate(
     });
 
   return { initialStep: initialClosure, steps, accepted };
+}
+
+/**
+ * Execute an instant simulation and build a full diagnostic trace of states visited.
+ */
+export function fastRun(
+  nodes: AutomataNode[],
+  edges: AutomataEdge[],
+  input: string,
+): FastRunResult | SimulationError {
+  const sim = buildAndSimulate(nodes, edges, input);
+  if ('kind' in sim) {
+    return sim;
+  }
+
+  const nodeMap = new Map<string, string>();
+  for (const n of nodes) {
+    nodeMap.set(n.id, n.label || n.id);
+  }
+
+  const allStepSets: Set<string>[] = [sim.initialStep, ...sim.steps];
+  const inputChars = Array.from(input);
+
+  const trace: ExecutionTraceStep[] = allStepSets.map((stepSet, index) => {
+    const activeStateIds = Array.from(stepSet);
+    const activeStateLabels = activeStateIds.map((id) => nodeMap.get(id) ?? id);
+    const symbolConsumed = index === 0 ? null : (inputChars[index - 1] ?? null);
+    return {
+      stepIndex: index,
+      symbolConsumed,
+      activeStateIds,
+      activeStateLabels,
+    };
+  });
+
+  return {
+    input,
+    accepted: sim.accepted,
+    trace,
+    totalSteps: allStepSets.length,
+  };
 }

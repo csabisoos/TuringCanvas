@@ -64,7 +64,7 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 ## Phase 7: Simulation Enhancements & Batch Testing 🚀
 
 * [x] Task 1.1: Bidirectional Stepping (`stepBack`), Timeline Scrubber & Arrow Key Navigation — *Completed 2026-11-08*
-* [ ] Task 1.2: Fast Run & Simulation Trace Modal
+* [x] Task 1.2: Fast Run & Simulation Trace Modal — *Completed 2026-11-08*
 * [ ] Task 1.3: Multiple Run (Batch Testing Suite with Pass/Fail Table)
 * [ ] Task 1.4: Nondeterministic Configuration Tree Visualizer
 * [ ] Task 1.5: DFA Completeness & Determinism Validator with Auto-Trap State Generation
