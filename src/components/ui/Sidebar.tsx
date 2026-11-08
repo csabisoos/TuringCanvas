@@ -26,6 +26,7 @@ function EditPanel(): ReactElement {
   const deleteSelected = useAutomataStore((s) => s.deleteSelected);
   const addTransition  = useAutomataStore((s) => s.addTransition);
   const applyAutoLayout = useAutomataStore((s) => s.applyAutoLayout);
+  const setNfaToDfaModalOpen = useAutomataStore((s) => s.setNfaToDfaModalOpen);
   const editorTool    = useAutomataStore((s) => s.editorTool);
   const setEditorTool = useAutomataStore((s) => s.setEditorTool);
 
@@ -157,6 +158,19 @@ function EditPanel(): ReactElement {
           Spring
         </button>
       </div>
+
+      <div className="my-1 border-t border-gray-800" />
+
+      <SectionLabel>Conversions</SectionLabel>
+      <SidebarButton
+        id="sidebar-nfa-to-dfa-btn"
+        icon={<ConvertIcon />}
+        aria-label="Open NFA to DFA conversion wizard"
+        onClick={() => { setNfaToDfaModalOpen(true); }}
+        disabled={isEmpty}
+      >
+        NFA → DFA Wizard
+      </SidebarButton>
 
       <div className="my-1 border-t border-gray-800" />
 
@@ -495,6 +509,18 @@ function TableIcon(): ReactElement {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <path d="M3 9h18M3 15h18M9 3v18" />
+    </svg>
+  );
+}
+
+function ConvertIcon(): ReactElement {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="16 3 21 3 21 8" />
+      <line x1="4" y1="20" x2="21" y2="3" />
+      <polyline points="21 16 21 21 16 21" />
+      <line x1="15" y1="15" x2="21" y2="21" />
+      <line x1="4" y1="4" x2="9" y2="9" />
     </svg>
   );
 }

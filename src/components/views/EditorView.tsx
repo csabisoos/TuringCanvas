@@ -7,6 +7,7 @@ import { AutomataCanvas } from '../canvas/AutomataCanvas';
 import { FastRunModal } from '../simulation/FastRunModal';
 import { BatchTestModal } from '../simulation/BatchTestModal';
 import { ExportLatexModal } from '../io/ExportLatexModal';
+import { NfaToDfaModal } from '../conversions/NfaToDfaModal';
 
 export function EditorView(): ReactNode {
   const editorMode = useAutomataStore((s) => s.editorMode);
@@ -27,6 +28,7 @@ export function EditorView(): ReactNode {
           <FastRunModal />
           <BatchTestModal />
           <ExportLatexModal />
+          <NfaToDfaModal />
 
           {/* Mode toggle at bottom of canvas area */}
           <div className="border-t border-gray-800 bg-gray-900 p-3 flex items-center justify-end">

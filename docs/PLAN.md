@@ -81,7 +81,7 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 
 ## Phase 9: Automata Transformations & Conversions 🚀
 
-* [ ] Task 2.1: Interactive NFA to DFA Powerset Construction Wizard
+* [x] Task 2.1: Interactive NFA to DFA Powerset Construction Wizard — *Completed 2026-11-08*
 * [ ] Task 2.2: DFA Minimization (Hopcroft Equivalence Partitioning & Distinguishable Table)
 * [ ] Task 2.3: DFA/NFA to Regular Expression via State Elimination (GNFA)
 * [ ] Task 2.4: Regular Expression to NFA via Thompson's Construction

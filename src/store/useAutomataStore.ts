@@ -115,6 +115,8 @@ interface AutomataState {
   isBatchModalOpen: boolean;
   /** Whether the LaTeX/TikZ export modal is open. */
   isLatexModalOpen: boolean;
+  /** Whether the interactive NFA to DFA conversion modal is open. */
+  isNfaToDfaModalOpen: boolean;
   /** Generated LaTeX/TikZ code. */
   latexCode: string;
   /** Undo history stack. */
@@ -229,6 +231,10 @@ interface AutomataActions {
   completeDFAWithTrap: () => void;
   /** Automatically arranges nodes on the canvas according to the given algorithm. */
   applyAutoLayout: (algorithm: LayoutAlgorithm) => void;
+  /** Sets whether the interactive NFA to DFA modal is open. */
+  setNfaToDfaModalOpen: (open: boolean) => void;
+  /** Replaces the current canvas with the converted DFA nodes and edges. */
+  applyConvertedDFA: (nodes: AutomataNode[], edges: AutomataEdge[]) => void;
   /**
    * Clears all simulation state back to the "not started" baseline.
    */
@@ -326,6 +332,7 @@ const INITIAL_STATE: AutomataState = {
   testCases: [],
   isBatchModalOpen: false,
   isLatexModalOpen: false,
+  isNfaToDfaModalOpen: false,
   latexCode: '',
   past: [],
   future: [],
@@ -792,6 +799,22 @@ export const useAutomataStore = create<AutomataStore>()(
       past: recordPast(past, nodes, edges),
       future: [],
       nodes: laidOutNodes,
+    });
+  },
+
+  setNfaToDfaModalOpen: (open: boolean): void => {
+    set({ isNfaToDfaModalOpen: open });
+  },
+
+  applyConvertedDFA: (nodes: AutomataNode[], edges: AutomataEdge[]): void => {
+    const { past, nodes: prevNodes, edges: prevEdges } = get();
+    set({
+      past: recordPast(past, prevNodes, prevEdges),
+      future: [],
+      nodes,
+      edges,
+      isNfaToDfaModalOpen: false,
+      ...SIMULATION_RESET,
     });
   },
 
