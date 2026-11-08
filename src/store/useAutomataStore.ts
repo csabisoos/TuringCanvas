@@ -149,6 +149,8 @@ interface AutomataState {
   isCompareModalOpen: boolean;
   /** Whether the computation tree visualizer modal is open. */
   isTreeModalOpen: boolean;
+  /** Whether the CFG <-> PDA conversion modal is open. */
+  isCfgPdaModalOpen: boolean;
   /** Generated LaTeX/TikZ code. */
   latexCode: string;
   /** Undo history stack. */
@@ -278,6 +280,8 @@ interface AutomataActions {
   setCompareModalOpen: (open: boolean) => void;
   /** Sets whether the computation tree visualizer modal is open. */
   setTreeModalOpen: (open: boolean) => void;
+  /** Sets whether the CFG <-> PDA conversion modal is open. */
+  setCfgPdaModalOpen: (open: boolean) => void;
   /** Sets active highlighted node IDs on the canvas. */
   setActiveNodeIds: (ids: string[]) => void;
   /** Replaces the current canvas with the converted DFA nodes and edges. */
@@ -389,6 +393,7 @@ const INITIAL_STATE: AutomataState = {
   isGnfaModalOpen: false,
   isCompareModalOpen: false,
   isTreeModalOpen: false,
+  isCfgPdaModalOpen: false,
   latexCode: '',
   past: [],
   future: [],
@@ -1054,6 +1059,10 @@ export const useAutomataStore = create<AutomataStore>()(
     set({ isTreeModalOpen: open });
   },
 
+  setCfgPdaModalOpen: (open: boolean): void => {
+    set({ isCfgPdaModalOpen: open });
+  },
+
   setActiveNodeIds: (ids: string[]): void => {
     set({ activeNodeIds: new Set(ids) });
   },
@@ -1070,6 +1079,7 @@ export const useAutomataStore = create<AutomataStore>()(
   isGnfaModalOpen: false,
   isCompareModalOpen: false,
   isTreeModalOpen: false,
+  isCfgPdaModalOpen: false,
       ...SIMULATION_RESET,
     });
   },

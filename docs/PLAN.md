@@ -87,12 +87,12 @@ A modern, offline-capable Progressive Web App (PWA) alternative to JFLAP for vis
 * [x] Task 2.4: Regular Expression to NFA via Thompson's Construction — *Completed 2026-11-08*
 * [x] Task 2.5: Automata Equivalence & Isomorphism Checker (with Counterexample) — *Completed 2026-11-08*
 
-## Phase 10: Pushdown Automata (PDA) Module 🚀
+## Phase 10: Pushdown Automata (PDA) Module ✅ — *Completed 2026-11-08*
 
 * [x] Task 3.1: Core PDA Domain Model & Invariants (`src/core/PDA.ts`) — *Completed 2026-11-08*
 * [x] Task 3.2: Non-deterministic PDA Simulation Engine (Final state vs Empty stack) — *Completed 2026-11-08*
 * [x] Task 3.3: PDA Canvas Adapter, Multi-field Edge Labels (`a, b; c`) & Animated Stack Visualizer — *Completed 2026-11-08*
-* [ ] Task 3.4: PDA $\leftrightarrow$ Context-Free Grammar (CFG) Conversions
+* [x] Task 3.4: PDA $\leftrightarrow$ Context-Free Grammar (CFG) Conversions — *Completed 2026-11-08*
 
 ## Phase 11: Turing Machines (TM) Module 🚀
 

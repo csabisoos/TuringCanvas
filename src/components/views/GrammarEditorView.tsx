@@ -5,6 +5,7 @@ import { GrammarTransformWizard } from '../grammar/GrammarTransformWizard';
 import { CYKTableView } from '../grammar/CYKTableView';
 import { LL1ParserView } from '../grammar/LL1ParserView';
 import { LRParserView } from '../grammar/LRParserView';
+import { CfgPdaConversionModal } from '../conversions/CfgPdaConversionModal';
 import type { GrammarData } from '../../types/grammar';
 
 const PRESETS: { label: string; rules: string; desc: string }[] = [
@@ -43,6 +44,8 @@ type Tab = 'editor' | 'cyk' | 'll1' | 'lr';
 
 export function GrammarEditorView(): ReactElement {
   const returnToDashboard = useAutomataStore((s) => s.returnToDashboard);
+  const isCfgPdaModalOpen = useAutomataStore((s) => s.isCfgPdaModalOpen);
+  const setCfgPdaModalOpen = useAutomataStore((s) => s.setCfgPdaModalOpen);
 
   const [rulesText, setRulesText] = useState(PRESETS[0]?.rules ?? 'S -> a S b | ε');
   const [activeTab, setActiveTab] = useState<Tab>('editor');
@@ -111,6 +114,12 @@ export function GrammarEditorView(): ReactElement {
           <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${chomskyBadge.color}`}>
             {chomskyBadge.label}
           </span>
+          <button
+            onClick={() => { setCfgPdaModalOpen(true); }}
+            className="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white transition-colors cursor-pointer shadow-sm"
+          >
+            ⇄ Convert to/from PDA
+          </button>
           <button
             onClick={() => { setIsWizardOpen(true); }}
             className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-colors cursor-pointer shadow-sm"
@@ -222,6 +231,13 @@ export function GrammarEditorView(): ReactElement {
         initialGrammar={grammarData}
         onApply={handleApplyTransformed}
         onClose={() => { setIsWizardOpen(false); }}
+      />
+
+      {/* CFG <-> PDA Conversion Modal */}
+      <CfgPdaConversionModal
+        isOpen={isCfgPdaModalOpen}
+        onClose={() => { setCfgPdaModalOpen(false); }}
+        currentGrammar={grammarData}
       />
     </div>
   );
